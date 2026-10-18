@@ -9,3 +9,7 @@ This is process liveness, not database readiness. No database connectivity has b
 Malformed JSON returns 400 (`VALIDATION_ERROR`); oversized bodies return 413 (`PAYLOAD_TOO_LARGE`); unexpected errors return 500 (`INTERNAL_ERROR`) without internal details. A global 120-request/minute/IP limit returns 429 (`RATE_LIMITED`). CORS permits configured `CLIENT_ORIGIN` values with credentials; it is not authentication.
 
 Sessions, CSRF token issuance, authorization, CRUD, and database error mappings belong to later phases. The client rejects mutations without an explicit CSRF header; this guard is not a substitute for future server-side CSRF protection.
+
+## Phase 2 database scope
+
+No HTTP endpoint was added or changed. Database configuration, schema/seed commands and real integration tests now exist separately from the health server. The API does not auto-connect databases or treat a configured URI as readiness. Authentication, role checks, CSRF write protection and all student/admin business endpoints remain later work. See setup-guide.md and verification.md for actual database test evidence.
