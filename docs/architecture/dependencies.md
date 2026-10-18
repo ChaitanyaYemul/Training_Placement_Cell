@@ -38,3 +38,7 @@ Direct dependency license metadata from the installed lockfile:
 | `vite`                        | MIT                 |
 | `vitest`                      | MIT                 |
 | `zod`                         | MIT                 |
+
+## Phase 2 additions
+
+`mysql2` 3.24.6 (MIT) supplies the approved promise-based SQL client; `mongoose` 9.11.2 (MIT) supplies models, validation and version-aware saves for MongoDB. Both were selected from current stable registry versions and locked. No ORM, password library, session library, additional validation library or test-database emulator was added. Local test service startup uses Node built-ins and the existing Docker CLI.

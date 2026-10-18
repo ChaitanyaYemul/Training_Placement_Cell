@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
 export const envSchema = z.object({
+  MYSQL_HOST: z.string().optional(),
+  MYSQL_PORT: z.string().optional(),
+  MYSQL_USER: z.string().optional(),
+  MYSQL_PASSWORD: z.string().optional(),
+  MYSQL_DATABASE: z.string().optional(),
+  MONGODB_URI: z.string().optional(),
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),

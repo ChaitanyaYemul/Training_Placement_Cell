@@ -10,20 +10,28 @@
   "scripts": {
     "dev": "node --watch --env-file-if-exists=.env src/server.js",
     "start": "node --env-file-if-exists=.env src/server.js",
-    "lint": "eslint src scripts ../tests/backend vitest.config.js --max-warnings 0",
+    "lint": "eslint src scripts ../tests/backend ../tests/db vitest*.config.js --max-warnings 0",
     "format": "prettier --write src scripts package.json",
     "test": "vitest run --config vitest.config.js",
     "test:integration": "vitest run --config vitest.config.js ../tests/backend/integration",
-    "db:migrate": "node scripts/notImplemented.js db:migrate",
-    "db:seed": "node scripts/notImplemented.js db:seed",
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.js",
+    "db:seed": "node --env-file-if-exists=.env scripts/seed.js",
     "admin:create": "node scripts/notImplemented.js admin:create",
-    "reconcile": "node scripts/notImplemented.js reconcile"
+    "reconcile": "node scripts/notImplemented.js reconcile",
+    "db:check": "node --env-file-if-exists=.env scripts/checkDatabases.js",
+    "db:schema": "node scripts/schemaSnapshot.js",
+    "mongo:setup": "node --env-file-if-exists=.env scripts/mongoSetup.js",
+    "mongo:seed": "node --env-file-if-exists=.env scripts/mongoSeed.js",
+    "test:db": "node --env-file-if-exists=.env.test ../node_modules/vitest/vitest.mjs run --config vitest.db.config.js",
+    "test:db:services": "node scripts/startTestDatabases.js"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
     "helmet": "^8.3.0",
+    "mongoose": "^9.11.2",
+    "mysql2": "^3.24.6",
     "pino": "^10.4.0",
     "zod": "^4.6.7"
   },

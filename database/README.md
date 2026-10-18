@@ -1,7 +1,13 @@
-# Database directories
+# Database artifacts
 
-Directories reserve space for MySQL and MongoDB schemas, migrations, seed data, and demonstration queries. They contain no executable database implementation.
+- `mysql/migrations/`: 17 ordered, immutable single-statement migrations (11 domain tables, 4 views, 2 history-delete guards). Runner metadata adds schema_migrations.
+- `mysql/schema.sql`: generated reference snapshot; apply migrations with `db:migrate`, never replay the snapshot into an existing database.
+- `mysql/seed/`: repeatable, non-destructive single-statement reference/sample inserts; `mysql/seed.sql` is their reference snapshot. No users/password hashes/real student records.
+- `mysql/queries/`: parameterized DBMS demonstrations exercised by integration tests, including EXPLAIN evidence.
+- `mongodb/schemas/`: BSON collection validators and explicit index definitions shared with model configuration.
+- `mongodb/seed/`: fictional recruitment/announcement samples requiring verified MySQL references.
+- `mongodb/queries/`: executed aggregation pipelines for schedules, round types and document checklists.
 
-MySQL will own relational master records, applications, history, and sessions. MongoDB will own recruitment-process and announcement documents only. There is no cross-database ACID transaction.
+MySQL owns relational master data, applications/history and future sessions. MongoDB owns only recruitment-process and announcement documents. See `docs/er-diagram.md`, `docs/mongodb-schema.md`, and `docs/architecture/database-ownership.md`.
 
-Phase 2 will introduce MySQL migrations plus the reference `mysql/schema.sql` and `mysql/seed.sql`, and MongoDB validators and indexes. No schema, seed, connection, or migration has been executed in Phase 1.
+Empty legacy `schemas/`/`migrations/` placeholder folders are reserved; no alternate MySQL schema authority or Mongo migration runner is implied. Schema changes require new SQL migrations and matching reference/docs updates; Mongo shape changes require coordinated model/validator/documentation updates.
