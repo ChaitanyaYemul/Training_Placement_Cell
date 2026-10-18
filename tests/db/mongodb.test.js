@@ -231,4 +231,9 @@ describe('Real MongoDB validators and Mongoose models', () => {
       code: 121,
     });
   });
+  it('accepts an announcement with no related drive, matching the BSON schema', async () => {
+    await expect(
+      Announcement.create({ ...validAnnouncement(), relatedDriveId: null }),
+    ).resolves.toBeTruthy();
+  });
 });

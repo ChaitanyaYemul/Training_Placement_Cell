@@ -45,7 +45,12 @@ const schema = new mongoose.Schema(
       required: true,
       default: () => ({ type: 'all', branchIds: [] }),
     },
-    relatedDriveId: { ...idField(), required: false, default: null },
+    relatedDriveId: {
+      ...idField(),
+      required: false,
+      default: null,
+      validate: (value) => value === null || Number.isInteger(value),
+    },
     links: {
       type: [linkSchema],
       default: [],

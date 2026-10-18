@@ -54,3 +54,7 @@ Run `npm run mongo:setup -w backend` explicitly with configured `.env`. It creat
 Drive/user/branch ids reference independent MySQL lifecycles and are not embedded master records. MongoDB cannot enforce a foreign key into MySQL. The sample-seed service verifies its drive and active-admin references in MySQL before writing Mongo documents. No other application write service exists yet. Future services must validate references, apply optimistic concurrency where relevant, and handle orphan/missing documents per AGENTS.md §7.
 
 No ACID transaction spans databases. Sample document upserts are repeatable and preserve existing documents; a partial two-document seed can be rerun safely. General cross-database orchestration, read degradation, HTTP error mapping and reconciliation are deferred to later backend phases.
+
+## Phase 3 API adapters
+
+Recruitment GET returns version instead of raw __v. PUT preserves content/version on identical retries; changed edits require the current version. SQL drive locking serializes published-round constraints with publication. Announcements support a genuinely NULL relatedDriveId through both Mongoose and BSON validation; the custom integer validator now explicitly permits NULL. No master data is copied into MongoDB, and no collection shape change was required.

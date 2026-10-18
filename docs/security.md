@@ -11,3 +11,11 @@ Configure CLIENT_ORIGIN as exact origins (no paths); never use wildcard credenti
 Logs contain generated request ids, HTTP method, route template, status and latency. They do not contain request bodies, query strings, passwords, CSRF tokens, cookies, session ids or student PII. Error responses never expose driver messages, SQL or stack traces. SESSION_SECRET and CSRF_SECRET must be generated locally and stored securely in the deployment environment, never in Git or frontend VITE variables.
 
 Administrator provisioning is operator-only through the CLI using ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD in a secure local environment. Do not pass passwords on the command line or create an admin through public registration. Shell/database access protects the CLI; no remote provisioning endpoint exists. Clear provisioning variables after use. No credentials are documented here.
+
+## Business authorization and consistency
+
+Every business router requires an authoritative active session. Administrator gates precede validation on privileged endpoints; student profile and own-application routes derive ownership from req.user.studentId. No role/userId/createdBy assignment is accepted from business request bodies. All implemented writes use the same CSRF and exact-origin protection as authentication. Numeric ids, sort/filter allowlists, bounded pagination and strict Zod bodies precede repository access.
+
+The REST implementation keeps SQL and MongoDB calls in repositories. Drive/branch writes and academic replacements are transactional; application status changes lock their row and insert history in the same transaction. Publication/recruitment edits lock the MySQL drive to serialize precondition checks without pretending the Mongo write is part of a shared transaction. MongoDB errors degrade drive reads or return sanitized 503 for required writes. A real local Mongo outage test verifies the write error path. Orphan cleanup after draft deletion remains explicitly pending when Mongo is unavailable.
+
+The full backend requires both databases at cold startup; read degradation covers a running instance's Mongo outage. Production deployment, distributed rate-limit storage, full session revocation/password-change workflows and frontend auth integration remain outside this phase.

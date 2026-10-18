@@ -1,10 +1,18 @@
-# Phase 3 authentication setup
+# Phase 3 full backend setup
+
+The business API commit requires both configured databases at startup. Run `npm run db:migrate -w backend` and `npm run mongo:setup -w backend` with schema-owner privileges before `npm run dev`; runtime auto-creation remains disabled. Supply session/CSRF secrets securely. The frontend remains a public preview; use an HTTP client with cookies and the documented CSRF sequence to exercise the APIs.
+
+For independent verification, authentication commit `80f7739` supports `npm run test:auth -w backend` before any business API files exist. At the business commit use `npm run test:business -w backend` for its HTTP/DB suite. Run `npm run test:backend -w backend` for all backend suites sequentially; they reset shared disposable `_test` databases and must not run in parallel.
+
+The optional `npm run test:outage -w backend` requires the exact helper-created local MongoDB test container/URI and Docker. It intentionally stops `placement-phase2-mongo`, verifies degraded drive reads and HTTP 503 on writes while MySQL stays available, and restarts Mongo in finally. It is separate from the generic suites, so externally supplied test instances are not stopped. No test is silently skipped.
+
+## Authentication setup reference
 
 Install from the root with `npm ci`. Configure backend/.env with actual local MySQL credentials plus unique SESSION_SECRET and CSRF_SECRET values (at least 32 characters, generated securely). The provided example values are placeholders and cannot be used to start authentication. Set NODE_ENV appropriately, CLIENT_ORIGIN to exact allowed origins, SESSION_MAX_AGE_MS for idle expiry and TRUST_PROXY_HOPS only for your actual reverse-proxy path.
 
 Apply `npm run db:migrate -w backend` before starting; new migration 0018 adds the persistent session table without changing historical migrations. Then `npm run dev` starts Vite and the authentication API. The runtime requires real MySQL access. GET /api/health remains process liveness, with no per-request database-readiness guarantee.
 
-For test services run `npm run test:db:services -w backend`. If backend/.env.test already exists it is preserved. Ensure this ignored test file contains secure SESSION_SECRET/CSRF_SECRET bindings as well as its disposable database settings. Run `npm run test:db -w backend` and `npm run test:auth -w backend` sequentially because they reset the same test schemas. Each suite refuses names not ending in `_test`. No authentication integration test uses MemoryStore.
+For test services run `npm run test:db:services -w backend`. Existing backend/.env.test bindings are preserved; the helper adds missing generated session/CSRF bindings only for its compatible local test setup. Ensure this ignored test file contains secure SESSION_SECRET/CSRF_SECRET bindings as well as its disposable database settings. Run `npm run test:db -w backend` and `npm run test:auth -w backend` sequentially because they reset the same test schemas. Each suite refuses names not ending in `_test`. No authentication integration test uses MemoryStore.
 
 For admin provisioning set ADMIN_EMAIL, ADMIN_NAME and ADMIN_PASSWORD securely for one `npm run admin:create -w backend` invocation, then clear those variables. The CLI validates inputs, hashes the password and transactionally creates the user/admin profile. Never pass passwords as command-line flags or create admin accounts via public registration.
 

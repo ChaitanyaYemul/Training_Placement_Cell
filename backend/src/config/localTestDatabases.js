@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, appendFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { parseEnv } from 'node:util';
 import { assertTestDatabase } from './databaseEnv.js';
@@ -44,5 +44,11 @@ export async function localTestSettings() {
     )
   )
     throw new Error('Invalid local test port');
+  for (const key of ['SESSION_SECRET', 'CSRF_SECRET']) {
+    if (settings[key] === undefined) {
+      settings[key] = randomBytes(32).toString('hex');
+      await appendFile(testEnvPath, `\n${key}=${settings[key]}\n`);
+    }
+  }
   return { ...settings, mysqlPort, mongoPort };
 }

@@ -34,7 +34,15 @@ export function errorHandler(error, _req, res, next) {
     result = [400, 'VALIDATION_ERROR', 'Invalid document'];
   if (error.name === 'VersionError')
     result = [409, 'CONFLICT', 'Document changed; reload and retry'];
-  if (['MongoServerSelectionError', 'MongoNetworkError'].includes(error.name))
+  if (
+    [
+      'MongoServerSelectionError',
+      'MongooseServerSelectionError',
+      'MongoNetworkError',
+      'MongoNotConnectedError',
+      'MongoTopologyClosedError',
+    ].includes(error.name)
+  )
     result = [503, 'SERVICE_UNAVAILABLE', 'Database unavailable'];
   if (error instanceof AppError)
     result = [error.status, error.code, error.message];
