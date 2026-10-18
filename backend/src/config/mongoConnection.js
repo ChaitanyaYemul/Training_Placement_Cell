@@ -5,6 +5,7 @@ export async function connectMongo(settings = getMongoSettings()) {
   return mongoose
     .createConnection(settings.MONGODB_URI, {
       autoIndex: false,
+      bufferCommands: false,
       autoCreate: false,
       serverSelectionTimeoutMS: 5000,
     })

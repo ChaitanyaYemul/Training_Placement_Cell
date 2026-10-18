@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, appendFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { parseEnv } from 'node:util';
 import { assertTestDatabase } from './databaseEnv.js';
@@ -13,7 +13,7 @@ export async function localTestSettings() {
   try {
     await writeFile(
       testEnvPath,
-      `NODE_ENV=test\nMYSQL_HOST=127.0.0.1\nMYSQL_PORT=3307\nMYSQL_USER=root\nMYSQL_PASSWORD=${randomBytes(32).toString('hex')}\nMYSQL_DATABASE=placement_test\nMONGODB_URI=mongodb://127.0.0.1:27018/placement_test\n`,
+      `NODE_ENV=test\nSESSION_SECRET=${randomBytes(32).toString('hex')}\nCSRF_SECRET=${randomBytes(32).toString('hex')}\nMYSQL_HOST=127.0.0.1\nMYSQL_PORT=3307\nMYSQL_USER=root\nMYSQL_PASSWORD=${randomBytes(32).toString('hex')}\nMYSQL_DATABASE=placement_test\nMONGODB_URI=mongodb://127.0.0.1:27018/placement_test\n`,
       { flag: 'wx', mode: 0o600 },
     );
   } catch (error) {
@@ -44,5 +44,11 @@ export async function localTestSettings() {
     )
   )
     throw new Error('Invalid local test port');
+  for (const key of ['SESSION_SECRET', 'CSRF_SECRET']) {
+    if (settings[key] === undefined) {
+      settings[key] = randomBytes(32).toString('hex');
+      await appendFile(testEnvPath, `\n${key}=${settings[key]}\n`);
+    }
+  }
   return { ...settings, mysqlPort, mongoPort };
 }

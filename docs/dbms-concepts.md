@@ -245,3 +245,17 @@ Captured by the actual `tests/db/demonstrations.test.js` run on the small determ
 ## Coverage limits
 
 Schema integrity, four views, example joins/subqueries/aggregates, index existence/plans, transaction helper behavior, history guards, document validation, projections/aggregations, unique indexes, concurrency and seed reference checks are implemented and tested at the database layer. No stored procedure was needed. Authentication/session storage, service-level business workflows, API authorization, complete eligibility/transition enforcement, general cross-database recovery and reconciliation remain unimplemented. These are not represented as passing integration features.
+
+## Persistent sessions and transactional identity creation (Phase 3 auth commit)
+
+Authentication adds app_sessions through migration 0018: a binary-collated primary session id, unsigned epoch expiry, JSON-valid session payload and expiry index. express-mysql-session reads/touches/deletes actual rows; tests verify expiration and logout invalidation. The auth repository creates users plus a student/admin profile inside withTransaction, so a failed child insert cannot leave a partial identity. Password hashes remain in users only and are selected only by the auth credential method. Role checks reload authoritative users instead of trusting client or cookie role values.
+
+## Phase 3 business API operations
+
+The catalog repositories execute parameterized company/posting/drive CRUD with explicit columns, validated sort maps, count queries and pagination. Visibility/ownership predicates filter active companies, student-visible drives and own application rows. Foreign keys translate orphan inserts/referenced deletes into sanitized 400/409 responses. Student academic replacement locks its parent and replaces only owned rows in a transaction.
+
+Drive creation inserts a draft and eligible-branch rows atomically in MySQL. Publication uses the database UTC clock and checks existing Mongo rounds before changing SQL status. Recruitment saves share the drive row lock with publication and use Mongoose optimistic concurrency/version-aware edits. Mongo reads/writes are still independent operations; HTTP tests verify safe retry behavior and controlled partial failure, and a separate real-outage test stops/restarts the local MongoDB instance.
+
+The application-status service is the single transition authority for current administrator status APIs. It locks an application, validates the transition, updates status and appends history in one InnoDB transaction. Submission/withdrawal services remain unimplemented, so their eligibility/deadline/application transactions are not claimed as working.
+
+Announcement CRUD uses projections/explicit document DTOs, escaped literal search, publication/expiry/audience predicates and bounded pagination. The optional relatedDriveId NULL path was corrected in the Mongoose validator to match the already documented BSON schema; no historical SQL migration or approved data-ownership assumption changed.

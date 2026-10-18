@@ -20,3 +20,5 @@ Mirrored unchanged from AGENTS.md §20. No assumption was changed in Phase 2.
 | A-14 | Academic data is self-reported by students; an admin verification workflow is out of scope unless approved.                                                                                            |
 
 **Open decisions — ask before implementing:** one-student-one-offer policy (restrict applications after `selected`?); academic-data verification; in-app read/unread tracking for announcements; email/SMS notifications; whether Socket.IO is justified; final choice between bcrypt and Argon2id (record as an ADR).
+
+Phase 3 resolved the hashing choice with explicit user approval: Argon2id, recorded in ADR 001. AGENTS.md remains unchanged; this decision must not be requested again as an unresolved preference.
