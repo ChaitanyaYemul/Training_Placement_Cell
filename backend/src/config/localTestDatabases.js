@@ -13,7 +13,7 @@ export async function localTestSettings() {
   try {
     await writeFile(
       testEnvPath,
-      `NODE_ENV=test\nMYSQL_HOST=127.0.0.1\nMYSQL_PORT=3307\nMYSQL_USER=root\nMYSQL_PASSWORD=${randomBytes(32).toString('hex')}\nMYSQL_DATABASE=placement_test\nMONGODB_URI=mongodb://127.0.0.1:27018/placement_test\n`,
+      `NODE_ENV=test\nSESSION_SECRET=${randomBytes(32).toString('hex')}\nCSRF_SECRET=${randomBytes(32).toString('hex')}\nMYSQL_HOST=127.0.0.1\nMYSQL_PORT=3307\nMYSQL_USER=root\nMYSQL_PASSWORD=${randomBytes(32).toString('hex')}\nMYSQL_DATABASE=placement_test\nMONGODB_URI=mongodb://127.0.0.1:27018/placement_test\n`,
       { flag: 'wx', mode: 0o600 },
     );
   } catch (error) {

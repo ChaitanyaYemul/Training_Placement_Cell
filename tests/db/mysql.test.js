@@ -32,12 +32,12 @@ afterAll(async () => {
 });
 describe('Real MySQL schema', () => {
   it('applies every migration to an empty database and reruns without changes', async () => {
-    expect(applied).toHaveLength(17);
+    expect(applied).toHaveLength(18);
     expect(await migrateMysql(pool, await readMigrations())).toEqual([]);
     const [[row]] = await pool.query(
       "SELECT COUNT(*) AS total FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'",
     );
-    expect(row.total).toBe(12); // 11 domain tables plus the migration ledger.
+    expect(row.total).toBe(13); // 11 domain tables, sessions and the migration ledger.
   });
   it('seeds repeatedly without overwriting company data or duplicating postings', async () => {
     await pool.execute(

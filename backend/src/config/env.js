@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
 export const envSchema = z.object({
+  SESSION_SECRET: z.string().optional(),
+  CSRF_SECRET: z.string().optional(),
+  SESSION_MAX_AGE_MS: z.string().optional(),
+  TRUST_PROXY_HOPS: z.string().optional(),
+  AUTH_RATE_LIMIT: z.string().optional(),
+  ADMIN_EMAIL: z.string().optional(),
+  ADMIN_PASSWORD: z.string().optional(),
+  ADMIN_NAME: z.string().optional(),
   MYSQL_HOST: z.string().optional(),
   MYSQL_PORT: z.string().optional(),
   MYSQL_USER: z.string().optional(),

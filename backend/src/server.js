@@ -1,20 +1,43 @@
-import { app } from './app.js';
+import { createApp } from './app.js';
+import { createMysqlPool } from './config/mysqlPool.js';
+import { getAuthSettings } from './config/authConfig.js';
+import { checkMysql } from './repositories/databaseHealthRepository.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
-
-const server = app.listen(env.PORT, '0.0.0.0', () => {
-  logger.info(
-    { port: env.PORT, phase: 'initialization' },
-    'Placement API listening; databases are not configured',
+let pool, app;
+try {
+  const security = getAuthSettings();
+  pool = createMysqlPool();
+  await checkMysql(pool);
+  app = createApp({ pool, security });
+  const server = app.listen(env.PORT, '0.0.0.0', () =>
+    logger.info(
+      { port: env.PORT },
+      'Placement API listening with MySQL-backed sessions',
+    ),
   );
-});
-server.on('error', () => {
-  logger.fatal({ event: 'listen_failed' }, 'Could not start API server');
-  process.exitCode = 1;
-});
-for (const signal of ['SIGTERM', 'SIGINT']) {
-  process.once(signal, () => {
-    server.close(() => process.exit(0));
-    setTimeout(() => server.closeAllConnections(), 5000).unref();
+  const closeResources = async () => {
+    await app.locals.closeSessions();
+    await pool.end();
+  };
+  server.on('error', async () => {
+    logger.fatal('API listener failed');
+    await closeResources();
+    process.exitCode = 1;
   });
+  for (const signal of ['SIGTERM', 'SIGINT'])
+    process.once(signal, () => {
+      server.close(async () => {
+        await closeResources();
+        process.exit(0);
+      });
+      setTimeout(() => server.closeAllConnections(), 5000).unref();
+    });
+} catch {
+  logger.fatal(
+    'API startup failed; configure database access, apply migrations and supply valid session/CSRF secrets',
+  );
+  if (app) await app.locals.closeSessions();
+  if (pool) await pool.end();
+  process.exitCode = 1;
 }

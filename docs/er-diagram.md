@@ -130,3 +130,7 @@ Tables with editable records also have `created_at` and `updated_at` UTC DATETIM
 | `v_placement_stats_by_branch` | All branches, distinct student totals and distinct selected students; a student with several offers counts once |
 
 Views use SQL SECURITY INVOKER. They do not expose password hashes. No session-store table is created before the session implementation selects its schema in Phase 3.
+
+## Authentication addition — migration 0018
+
+app_sessions is infrastructure storage keyed by session_id VARCHAR(128), with expires INT UNSIGNED and JSON-valid data MEDIUMTEXT. idx_sessions_expires supports TTL cleanup. It has no users FK because anonymous CSRF bootstrap sessions exist before login; session payloads hold an internal user id only after authentication. This is the 13th base table including the migration ledger (11 domain tables plus sessions plus ledger). Runtime store auto-creation is disabled.

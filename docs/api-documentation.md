@@ -1,15 +1,16 @@
-# API documentation — Phase 1
+# Backend API — authentication commit
 
-Only `GET /api/health` is implemented. It is public, requires no session, and accepts no parameters or body.
+Base path `/api`. Responses use `{success:true,data:...}` and errors use `{success:false,error:{code,message,details?}}`. Auth responses are non-cacheable. Database/migration errors are sanitized.
 
-Response: HTTP 200 with `{"success":true,"data":{"status":"ok","service":"placement-api","phase":"initialization","databases":"not-configured"}}`.
+| Method/path          | Auth                    | Input                        | Result                                                                                                       |
+| -------------------- | ----------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| GET /health          | Public                  | None                         | 200 process liveness; runtime reports phase authentication and databases not-checked, not database readiness |
+| GET /auth/csrf-token | Public                  | None                         | 200 `{csrfToken}` plus anonymous session cookie                                                              |
+| POST /auth/register  | CSRF + Origin           | `{email,password,fullName?}` | 201 `{id,email,role:"student"}`; role input is discarded; other unknown keys rejected; no automatic login    |
+| POST /auth/login     | CSRF + Origin           | `{email,password}`           | 200 `{user:{id,email,role,studentId,adminId},csrfToken}`; session regenerated                                |
+| GET /auth/me         | Session                 | None                         | 200 authoritative safe current user; 401 anonymous/inactive                                                  |
+| POST /auth/logout    | Session + CSRF + Origin | Empty body                   | 204; session destroyed and cookie cleared                                                                    |
 
-This is process liveness, not database readiness. No database connectivity has been tested. All other endpoints, including writes, return HTTP 404 with `{"success":false,"error":{"code":"NOT_FOUND","message":"Endpoint not found"}}`.
+Register/login enforce email syntax, bounded passwords and unknown-key rejection. Duplicate registration returns 409 CONFLICT. Invalid/unknown/inactive login returns the same 401 UNAUTHENTICATED message. Invalid CSRF/origin returns 403 FORBIDDEN. Combined login/register rate limiting returns 429 RATE_LIMITED. Invalid inputs return 400 VALIDATION_ERROR with field paths, never submitted values. Backend role middleware returns 403 for insufficient permissions; business routes are added in the separate business API commit.
 
-Malformed JSON returns 400 (`VALIDATION_ERROR`); oversized bodies return 413 (`PAYLOAD_TOO_LARGE`); unexpected errors return 500 (`INTERNAL_ERROR`) without internal details. A global 120-request/minute/IP limit returns 429 (`RATE_LIMITED`). CORS permits configured `CLIENT_ORIGIN` values with credentials; it is not authentication.
-
-Sessions, CSRF token issuance, authorization, CRUD, and database error mappings belong to later phases. The client rejects mutations without an explicit CSRF header; this guard is not a substitute for future server-side CSRF protection.
-
-## Phase 2 database scope
-
-No HTTP endpoint was added or changed. Database configuration, schema/seed commands and real integration tests now exist separately from the health server. The API does not auto-connect databases or treat a configured URI as readiness. Authentication, role checks, CSRF write protection and all student/admin business endpoints remain later work. See setup-guide.md and verification.md for actual database test evidence.
+A client must first obtain a token with cookie credentials enabled, send X-CSRF-Token and the configured Origin on writes, then use the new login token afterward. No session ids or hashes appear in JSON. No bearer token/localStorage authentication exists. All protected data must use the session's user id, not a client-supplied ownership id.

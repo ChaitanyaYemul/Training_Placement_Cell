@@ -1,3 +1,17 @@
+# Phase 3 authentication setup
+
+Install from the root with `npm ci`. Configure backend/.env with actual local MySQL credentials plus unique SESSION_SECRET and CSRF_SECRET values (at least 32 characters, generated securely). The provided example values are placeholders and cannot be used to start authentication. Set NODE_ENV appropriately, CLIENT_ORIGIN to exact allowed origins, SESSION_MAX_AGE_MS for idle expiry and TRUST_PROXY_HOPS only for your actual reverse-proxy path.
+
+Apply `npm run db:migrate -w backend` before starting; new migration 0018 adds the persistent session table without changing historical migrations. Then `npm run dev` starts Vite and the authentication API. The runtime requires real MySQL access. GET /api/health remains process liveness, with no per-request database-readiness guarantee.
+
+For test services run `npm run test:db:services -w backend`. If backend/.env.test already exists it is preserved. Ensure this ignored test file contains secure SESSION_SECRET/CSRF_SECRET bindings as well as its disposable database settings. Run `npm run test:db -w backend` and `npm run test:auth -w backend` sequentially because they reset the same test schemas. Each suite refuses names not ending in `_test`. No authentication integration test uses MemoryStore.
+
+For admin provisioning set ADMIN_EMAIL, ADMIN_NAME and ADMIN_PASSWORD securely for one `npm run admin:create -w backend` invocation, then clear those variables. The CLI validates inputs, hashes the password and transactionally creates the user/admin profile. Never pass passwords as command-line flags or create admin accounts via public registration.
+
+`npm run check` runs ordinary tests, lint, formatting and the frontend build. Browser smoke checks need the backend environment configured and free ports 3000/5173. Use the preinstalled Chromium override documented below. See security.md for CSRF token sequencing and secure proxy/cookie configuration.
+
+## Phase 2 database setup reference
+
 # Local development and database setup
 
 Use Node 24.x and npm 11.x. From the repository root, run `npm ci`. `npm run dev` still starts the frontend and the public health-only Express API without requiring databases. The existing React/Express architecture and API contract remain unchanged.

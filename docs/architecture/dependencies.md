@@ -42,3 +42,7 @@ Direct dependency license metadata from the installed lockfile:
 ## Phase 2 additions
 
 `mysql2` 3.24.6 (MIT) supplies the approved promise-based SQL client; `mongoose` 9.11.2 (MIT) supplies models, validation and version-aware saves for MongoDB. Both were selected from current stable registry versions and locked. No ORM, password library, session library, additional validation library or test-database emulator was added. Local test service startup uses Node built-ins and the existing Docker CLI.
+
+## Phase 3 authentication dependencies
+
+Argon2 implements the approved Argon2id choice; express-session and express-mysql-session provide server-side persistent sessions. npm overrides the session store's older mysql2 transitive pin to the patched compatible 3.24.6 line, because the initial audit found vulnerable mysql2 versions. The actual session store integration suite is rerun against that override. No CSRF package is required for the small session-bound HMAC mechanism using Node crypto.

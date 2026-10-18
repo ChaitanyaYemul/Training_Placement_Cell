@@ -245,3 +245,7 @@ Captured by the actual `tests/db/demonstrations.test.js` run on the small determ
 ## Coverage limits
 
 Schema integrity, four views, example joins/subqueries/aggregates, index existence/plans, transaction helper behavior, history guards, document validation, projections/aggregations, unique indexes, concurrency and seed reference checks are implemented and tested at the database layer. No stored procedure was needed. Authentication/session storage, service-level business workflows, API authorization, complete eligibility/transition enforcement, general cross-database recovery and reconciliation remain unimplemented. These are not represented as passing integration features.
+
+## Persistent sessions and transactional identity creation (Phase 3 auth commit)
+
+Authentication adds app_sessions through migration 0018: a binary-collated primary session id, unsigned epoch expiry, JSON-valid session payload and expiry index. express-mysql-session reads/touches/deletes actual rows; tests verify expiration and logout invalidation. The auth repository creates users plus a student/admin profile inside withTransaction, so a failed child insert cannot leave a partial identity. Password hashes remain in users only and are selected only by the auth credential method. Role checks reload authoritative users instead of trusting client or cookie role values.
