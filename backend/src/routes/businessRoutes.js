@@ -248,6 +248,28 @@ export function businessRoutes(services, auth, settings) {
       { paginated: true },
     ),
   );
+  router.post(
+    '/placement-drives/:id/applications',
+    student,
+    csrf,
+    validate(requestSchema(z.object({}).strict().optional(), pathId)),
+    endpoint((user, { id }) => services.applications.apply(id, user), {
+      status: 201,
+    }),
+  );
+  router.patch(
+    '/applications/:id/withdraw',
+    student,
+    csrf,
+    validate(requestSchema(z.object({}).strict().optional(), pathId)),
+    endpoint((user, { id }) => services.applications.withdraw(id, user)),
+  );
+  router.get(
+    '/applications/:id',
+    requireRole('student', 'admin'),
+    validate(requestSchema(undefined, pathId)),
+    endpoint((user, { id }) => services.applications.detail(id, user)),
+  );
   router.get(
     '/admin/applications',
     admin,

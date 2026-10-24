@@ -56,7 +56,7 @@ SELECT company_name FROM v_drive_overview WHERE id = 1;
 ```
 
 - **Expected result:** Example Campus Labs in the test fixture.
-- **Project use case:** Drive overview and application detail retrieval. View access must still be restricted by future services.
+- **Project use case:** Drive overview and application detail retrieval. Application access is restricted by owner/role predicates in the current services.
 
 ## Correlated subqueries and EXISTS
 
@@ -103,8 +103,8 @@ EXPLAIN SELECT d.id, d.title, d.registration_deadline FROM placement_drives AS d
 ## MySQL transactions and ACID rollback
 
 - **Definition:** An InnoDB transaction commits all included statements or rolls them back together.
-- **Why required:** An application insert must not survive a failing history write in future application services.
-- **Where implemented:** `backend/src/repositories/transaction.js; tests/db/mysql.test.js`.
+- **Why required:** Application submission/withdrawal/status updates must not survive a failing history write.
+- **Where implemented:** `backend/src/repositories/transaction.js; backend/src/services/studentApplicationService.js; backend/src/services/applicationStatusService.js; tests/db/mysql.test.js; tests/business/studentApplicationIntegrity.test.js`.
 - **Example query/code:**
 
 ```sql
@@ -115,7 +115,7 @@ INSERT INTO student_applications (drive_id, student_id) VALUES (1, 1);
 ```
 
 - **Expected result:** Executed rollback test leaves zero application rows; separate successful transaction test persists application plus history.
-- **Project use case:** The transaction helper/DB behavior is verified; registration/application/status services and their complete business rules are not implemented.
+- **Project use case:** Registration, submission, withdrawal and administrator status services use real transactions. Controlled history failures roll back actual MySQL application/status writes.
 
 ## Deletion guards and immutable history
 
@@ -242,7 +242,7 @@ Captured by the actual `tests/db/demonstrations.test.js` run on the small determ
 | academic EXISTS eligibility | mixed          | PRIMARY / uq_academic_student_semester       | Two academic rows were scanned in one join; correlated MAX used the academic unique index                                        |
 | company selection aggregate | index + eq_ref | idx_applications_drive_status + primary keys | Temporary grouping/filesort on fixture                                                                                           |
 
-## Coverage limits
+## Coverage limits (historical Phase 2)
 
 Schema integrity, four views, example joins/subqueries/aggregates, index existence/plans, transaction helper behavior, history guards, document validation, projections/aggregations, unique indexes, concurrency and seed reference checks are implemented and tested at the database layer. No stored procedure was needed. Authentication/session storage, service-level business workflows, API authorization, complete eligibility/transition enforcement, general cross-database recovery and reconciliation remain unimplemented. These are not represented as passing integration features.
 
@@ -256,6 +256,41 @@ The catalog repositories execute parameterized company/posting/drive CRUD with e
 
 Drive creation inserts a draft and eligible-branch rows atomically in MySQL. Publication uses the database UTC clock and checks existing Mongo rounds before changing SQL status. Recruitment saves share the drive row lock with publication and use Mongoose optimistic concurrency/version-aware edits. Mongo reads/writes are still independent operations; HTTP tests verify safe retry behavior and controlled partial failure, and a separate real-outage test stops/restarts the local MongoDB instance.
 
-The application-status service is the single transition authority for current administrator status APIs. It locks an application, validates the transition, updates status and appends history in one InnoDB transaction. Submission/withdrawal services remain unimplemented, so their eligibility/deadline/application transactions are not claimed as working.
+The application-status service is the single transition authority for current administrator status APIs. It locks an application, validates the transition, updates status and appends history in one InnoDB transaction. Submission/withdrawal were deferred from Phase 3; their Phase 5 implementation and tests are described below.
 
 Announcement CRUD uses projections/explicit document DTOs, escaped literal search, publication/expiry/audience predicates and bounded pagination. The optional relatedDriveId NULL path was corrected in the Mongoose validator to match the already documented BSON schema; no historical SQL migration or approved data-ownership assumption changed.
+
+## Phase 5: concurrent, transactional student applications
+
+- **Definition:** Row locks serialize conflicting decisions; a UNIQUE constraint is the final duplicate guard; a conditional INSERT evaluates the deadline on the database clock at the write itself.
+- **Why required:** Two browser requests must not create duplicate applications or partial history, and academic/lifecycle edits cannot race an eligibility decision.
+- **Where implemented:** `backend/src/services/studentApplicationService.js`, `backend/src/services/applicationStatusService.js`, `backend/src/repositories/applicationRepository.js`, `backend/src/repositories/studentRepository.js`; verified by `tests/business/studentApplications.test.js`, `tests/business/studentApplicationIntegrity.test.js` and `tests/outage/mongo.test.js`. Existing schema constraints/indexes are reused; no migration is needed.
+- **Example query (guarded insert inside the service transaction):**
+
+```sql
+INSERT INTO student_applications (drive_id, student_id)
+SELECT id, ? FROM placement_drives
+WHERE id = ? AND status = 'published'
+  AND UTC_TIMESTAMP() < registration_deadline;
+```
+
+- **Expected result:** Eligible concurrent requests yield one 201 and one duplicate 409, exactly one application and one initial history row. A deadline reached before INSERT yields no row. An initial history failure rolls back the application; a withdrawal failure rolls back both the status and history. Concurrent selection/withdrawal commits one valid terminal transition and rejects the other. Tests use actual MySQL plus deterministic lock barriers rather than guessed sleeps.
+- **Project use case:** The service locks the drive, then student parent, then latest academic row. The academic replacement service locks the same student parent. This ensures eligibility uses one committed profile/academic revision; the existing shared eligibility function stays authoritative. A later academic change does not revoke a prior application. Withdrawal locks the owned application and appends history atomically.
+
+## Phase 5: consistent history and archived context
+
+- **Definition:** A single SELECT over relational joins reads one consistent snapshot, with an owner predicate restricting student access.
+- **Why required:** A student must never see another student's application or a status from one revision paired with history from another. Archiving a drive must preserve the student's history.
+- **Where implemented:** `applicationRepository.detail`; history joins use the existing application/date index.
+- **Example query:**
+
+```sql
+SELECT a.id, a.status, h.from_status, h.to_status, h.changed_at
+FROM student_applications AS a
+LEFT JOIN application_status_history AS h ON h.application_id = a.id
+WHERE a.id = ? AND a.student_id = ?
+ORDER BY h.changed_at, h.id;
+```
+
+- **Expected result:** The owner sees ordered history and archived-drive summary; another student receives 404. History is bounded by terminal transitions, so no separate paginated history collection is necessary. Application/drive names remain relational joins, not duplicated Mongo documents or snapshots.
+- **Project use case:** Application detail/history remains SQL-only and works during an actual Mongo outage, as do submission and withdrawal. The browser invalidates cached application/drive/dashboard views only after server success.

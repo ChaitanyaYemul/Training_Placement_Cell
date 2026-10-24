@@ -8,6 +8,7 @@ import { catalogService } from '../services/catalogService.js';
 import { driveService } from '../services/driveService.js';
 import { announcementService } from '../services/announcementService.js';
 import { applicationStatusService } from '../services/applicationStatusService.js';
+import { studentApplicationService } from '../services/studentApplicationService.js';
 import { businessRoutes } from '../routes/businessRoutes.js';
 export function businessDependencies(
   pool,
@@ -22,12 +23,16 @@ export function businessDependencies(
     drives: driveRepository(pool),
     recruitment: recruitment || recruitmentRepository(mongo),
     announcements: announcementRepository(mongo),
+    applications: applicationRepository(pool),
   };
   const services = {
     catalog: catalogService(repositories),
     drives: driveService(repositories),
     announcements: announcementService(repositories),
-    applications: applicationStatusService(pool, applicationRepository(pool)),
+    applications: {
+      ...applicationStatusService(pool, repositories.applications),
+      ...studentApplicationService(repositories),
+    },
   };
   return (app, auth) =>
     app.use('/api', businessRoutes(services, auth, settings));

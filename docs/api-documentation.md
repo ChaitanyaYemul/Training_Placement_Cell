@@ -70,8 +70,40 @@ Students never receive draft/archived drive details or inactive companies; absen
 
 During a Mongo outage, drive detail returns the MySQL data, `recruitment:null` and `warnings:[{code:"RECRUITMENT_DATA_UNAVAILABLE"}]`. Recruitment writes return 503 and leave the SQL drive unchanged. Draft deletion commits SQL first; failed Mongo cleanup returns `RECRUITMENT_CLEANUP_PENDING` and logs the drive id for later reconciliation. Do not blindly repeat the DELETE after a lost response; refetch the resource. General reconciliation remains unimplemented.
 
-Application submission, withdrawal, application-history detail and report endpoints remain deferred. Phase 4 adds frontend authentication and workspaces using the implemented endpoints; see architecture/phase-4-frontend.md. Existing test application rows are isolated fixtures; do not interpret their presence as an implemented apply flow.
+Phase 4 adds frontend authentication and workspaces using the implemented endpoints. Phase 5 adds submission, withdrawal and application/history detail as documented below. Report endpoints and reconciliation remain deferred.
 
 ## Phase 4 client integration
 
 The React client now uses the existing session/CSRF APIs and business endpoints. No backend endpoint, schema or response contract changes in this phase. The client preserves pagination metadata, warnings and 204 behavior. Student registration leads to sign-in. Login rotates CSRF; logout clears the client cache after server success. Backend roles and ownership remain authoritative. See architecture/phase-4-frontend.md for routes, query invalidation and deferred capabilities.
+
+## Phase 5 student application endpoints
+
+All three endpoints require an active session and strict positive integer path ids. Write endpoints require the current X-CSRF-Token and an exact configured Origin. Unknown body/query fields are rejected. Ownership always derives from the authenticated session.
+
+| Method/path                             | Role                         | Body            | Result                                                                        |
+| --------------------------------------- | ---------------------------- | --------------- | ----------------------------------------------------------------------------- |
+| POST /placement-drives/:id/applications | Student                      | `{}` or no body | 201 application detail with initial `applied` history                         |
+| PATCH /applications/:id/withdraw        | Student, own only            | `{}` or no body | 200 updated application detail/history                                        |
+| GET /applications/:id                   | Own student or administrator | None            | 200 application/drive summary with ordered history, including archived drives |
+
+Application detail fields: `id`, `studentId`, `driveId`, `status`, `appliedAt`, `updatedAt`, `driveTitle`, `driveStatus`, `jobTitle`, `companyName`, and `history`. Each history item contains `id`, `fromStatus` (null for initial submission), `toStatus`, `changedBy` (user id), `actorRole`, `remarks` (nullable) and `changedAt`. Timestamps are UTC. History is bounded by the terminal status graph and ordered by changedAt then id. A single SQL statement reads the application and history consistently. No hashes, emails, phone numbers or other students' profiles are projected. Official administrator remarks are visible to the owning student.
+
+Submission checks a visible published drive, an unexpired deadline, a complete profile (name, enrollment, branch, graduation year, at least one semester), latest-semester eligibility, and no prior application. A guarded INSERT checks `UTC_TIMESTAMP() < registration_deadline` again at the actual write. Application creation and the first history event commit/rollback together. Duplicate races use the existing UNIQUE(drive_id, student_id) constraint; no client studentId/status is accepted. Withdrawn applications count as existing applications and cannot be resubmitted.
+
+Withdrawal accepts only own applied/shortlisted applications and stores its history atomically with the status change. It does not re-evaluate eligibility or require the drive to remain open. Selected, rejected and withdrawn statuses are terminal. Administrator selection changes and student withdrawal serialize on the same application row. Archived drives stay hidden from the drive API; an owner can still read their application summary/history.
+
+| Status / code                 | Trigger                                                                                                    |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 401 UNAUTHENTICATED           | Missing/expired/inactive session                                                                           |
+| 403 FORBIDDEN                 | Wrong role, CSRF or Origin                                                                                 |
+| 400 VALIDATION_ERROR          | Invalid id, unknown request fields or nonempty write body                                                  |
+| 404 NOT_FOUND                 | Missing/hidden drive, missing application, or another student's application                                |
+| 409 CONFLICT                  | Completed/cancelled drive is not accepting applications                                                    |
+| 409 DEADLINE_PASSED           | Deadline reached or passed, including at the guarded INSERT                                                |
+| 409 PROFILE_INCOMPLETE        | Missing required own profile/academic fields; details use `profile.<field>`                                |
+| 400 NOT_ELIGIBLE              | Failed backend criteria; details use `eligibility.MIN_CGPA`, `.BACKLOGS`, `.BRANCH`, or `.GRADUATION_YEAR` |
+| 409 DUPLICATE_APPLICATION     | An application already exists, including withdrawn                                                         |
+| 409 INVALID_STATUS_TRANSITION | Application cannot be withdrawn/changed from its current status                                            |
+| 503 SERVICE_UNAVAILABLE       | Required MySQL unavailable                                                                                 |
+
+These operations have no MongoDB dependency. The actual-outage test verifies submission, detail and withdrawal with Mongo stopped. Student UI applies no optimistic business update or automatic write retry; success invalidates application lists/details, drives and dashboard queries. This phase adds no one-student-one-offer restriction.

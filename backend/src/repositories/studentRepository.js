@@ -8,6 +8,19 @@ const columns = {
 };
 export function studentRepository(pool) {
   return {
+    async lockApplicationProfile(tx, studentId) {
+      // Academic replacement and profile updates lock this same parent row; eligibility cannot mix revisions.
+      const [[profile]] = await tx.execute(
+        'SELECT id, full_name AS fullName, enrollment_number AS enrollmentNumber, branch_id AS branchId, graduation_year AS graduationYear FROM students WHERE id = ? FOR UPDATE',
+        [studentId],
+      );
+      if (!profile) return null;
+      const [[academic]] = await tx.execute(
+        'SELECT cgpa, active_backlogs AS activeBacklogs FROM academic_records WHERE student_id = ? ORDER BY semester DESC LIMIT 1 FOR UPDATE',
+        [studentId],
+      );
+      return { ...profile, academic: academic || null };
+    },
     async profile(studentId) {
       const [[row]] = await pool.execute(
         'SELECT id, user_id AS userId, full_name AS fullName, enrollment_number AS enrollmentNumber, phone, branch_id AS branchId, graduation_year AS graduationYear FROM students WHERE id = ?',
