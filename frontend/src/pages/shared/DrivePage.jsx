@@ -9,6 +9,7 @@ import {
   StatusBadge,
 } from '../../components/ui.jsx';
 import RecruitmentView from '../../components/RecruitmentView.jsx';
+import ApplyControl from '../student/ApplyControl.jsx';
 import { formatDate } from '../../utils/dates.js';
 const reasons = {
   MIN_CGPA: 'Minimum CGPA',
@@ -84,10 +85,7 @@ export default function DrivePage() {
                     .
                   </p>
                 )}
-                <p className="mt-2 text-sm">
-                  Application submission and withdrawal will be available in a
-                  later phase.
-                </p>
+                <ApplyControl drive={row} />
               </div>
             )}
           </div>

@@ -124,6 +124,6 @@ it('keeps relational drive information visible when recruitment is unavailable',
     screen.getByText(/Recruitment information is temporarily unavailable/),
   ).toBeInTheDocument();
   expect(
-    screen.queryByRole('button', { name: 'Apply' }),
-  ).not.toBeInTheDocument();
+    screen.getByRole('button', { name: 'Apply to this drive' }),
+  ).toBeDisabled();
 });

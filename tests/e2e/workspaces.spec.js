@@ -1,5 +1,5 @@
 import { test, expect, signIn, assertNoOverflow } from './helpers.js';
-test('student registers, signs in and saves profile and academics without document navigation', async ({
+test('student registers, completes profile, applies and withdraws without document navigation', async ({
   page,
 }) => {
   await page.goto('/register');
@@ -58,6 +58,53 @@ test('student registers, signs in and saves profile and academics without docume
   await expect(
     page.getByText('College ID Card', { exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Apply to this drive', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+  await expect(page).toHaveURL(/\/student\/applications\/\d+$/);
+  await expect(
+    page.getByRole('heading', { name: 'Status history' }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => window.__navigationMarker)).toBe(
+    'preserved',
+  );
+  await page
+    .getByRole('link', { name: 'My applications', exact: true })
+    .click();
+  await expect(
+    page.getByRole('cell', { name: 'applied', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: /History/ }).click();
+  await page
+    .getByRole('button', { name: 'Withdraw application', exact: true })
+    .click();
+  await expect(page.getByRole('dialog')).toContainText('Withdrawal is final.');
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+  await expect(
+    page.getByText('applied → withdrawn', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Withdraw application', exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole('link', { name: 'My applications', exact: true })
+    .click();
+  await expect(
+    page.getByRole('cell', { name: 'withdrawn', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('link', { name: 'Example Test Drive', exact: true })
+    .click();
+  await expect(
+    page.getByRole('link', { name: 'View my applications →' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Apply to this drive', exact: true }),
+  ).toHaveCount(0);
+  expect(await page.evaluate(() => window.__navigationMarker)).toBe(
+    'preserved',
+  );
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(
     page.getByRole('heading', { name: 'Welcome back' }),
@@ -135,8 +182,11 @@ test('admin reviews an application and publishes an announcement visible to a st
   await signIn(page, 'admin');
   await page.getByRole('link', { name: 'Applications', exact: true }).click();
   await page
+    .getByRole('row')
+    .filter({
+      has: page.getByRole('link', { name: '#1 · History', exact: true }),
+    })
     .getByRole('button', { name: 'Update status', exact: true })
-    .first()
     .click();
   await page.getByLabel('New application status').selectOption('shortlisted');
   await page.getByRole('button', { name: 'Confirm', exact: true }).click();

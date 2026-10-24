@@ -23,6 +23,15 @@ export default async function globalSetup() {
     await mongo.db
       .collection('recruitment_processes')
       .insertOne(validRecruitment());
+    // Independent published drive for the Phase 5 browser application/selection/archive flow.
+    await pool.execute(`INSERT INTO placement_drives (id, job_posting_id, title, status, registration_deadline, min_cgpa, max_active_backlogs, eligible_graduation_year, created_by)
+      SELECT 2, job_posting_id, 'Example history drive', 'published', registration_deadline, min_cgpa, max_active_backlogs, eligible_graduation_year, created_by FROM placement_drives WHERE id=1`);
+    await pool.execute(
+      'INSERT INTO drive_eligible_branches (drive_id, branch_id) SELECT 2, branch_id FROM drive_eligible_branches WHERE drive_id=1',
+    );
+    await mongo.db
+      .collection('recruitment_processes')
+      .insertOne({ ...validRecruitment(), placementDriveId: 2 });
     await pool.execute(
       "INSERT INTO student_applications (drive_id, student_id, status) VALUES (1, 1, 'applied')",
     );

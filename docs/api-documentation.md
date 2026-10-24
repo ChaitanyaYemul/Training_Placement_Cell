@@ -1,4 +1,4 @@
-# Backend API — Phase 3
+# Backend API — implemented contract
 
 Base path `/api`. Responses use `{success:true,data:...}` and errors use `{success:false,error:{code,message,details?}}`. Auth responses are non-cacheable. Database/migration errors are sanitized.
 

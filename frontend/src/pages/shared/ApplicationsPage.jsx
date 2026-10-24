@@ -1,18 +1,13 @@
+import ApplicationReviewDialog from '../admin/ApplicationReviewDialog.jsx';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
-import { useResource, useResourceMutation } from '../../hooks/useResource.js';
+import { useResource } from '../../hooks/useResource.js';
 import { useListFilters } from '../../hooks/useListFilters.js';
-import { useToast } from '../../context/toastContext.js';
-import {
-  Button,
-  Field,
-  PageHeader,
-  StatusBadge,
-} from '../../components/ui.jsx';
+import { Button, PageHeader, StatusBadge } from '../../components/ui.jsx';
 import ListView from '../../components/ListView.jsx';
-import ConfirmDialog from '../../components/ConfirmDialog.jsx';
 import { formatDate } from '../../utils/dates.js';
+import WithdrawControl from '../student/WithdrawControl.jsx';
 export default function ApplicationsPage() {
   const { user } = useAuth();
   const admin = user.role === 'admin';
@@ -22,11 +17,7 @@ export default function ApplicationsPage() {
     refetchInterval: 45_000,
     refetchIntervalInBackground: false,
   });
-  const toast = useToast();
   const [selected, setSelected] = useState(null);
-  const [status, setStatus] = useState('shortlisted');
-  const [remarks, setRemarks] = useState('');
-  const mutation = useResourceMutation(['/admin/applications']);
   return (
     <>
       <PageHeader
@@ -54,7 +45,12 @@ export default function ApplicationsPage() {
             label: 'Application',
             render: (r) => (
               <>
-                #{r.id}
+                <Link
+                  className="text-link"
+                  to={`/${user.role}/applications/${r.id}`}
+                >
+                  #{r.id} · History
+                </Link>
                 {admin && <p className="text-xs">Student #{r.studentId}</p>}
               </>
             ),
@@ -93,10 +89,7 @@ export default function ApplicationsPage() {
                     <Button
                       variant="secondary"
                       onClick={() => {
-                        mutation.reset();
                         setSelected(r);
-                        setRemarks('');
-                        setStatus('shortlisted');
                       }}
                     >
                       Update status
@@ -104,53 +97,24 @@ export default function ApplicationsPage() {
                   ),
                 },
               ]
-            : []),
+            : [
+                {
+                  label: 'Actions',
+                  render: (r) =>
+                    ['applied', 'shortlisted'].includes(r.status) ? (
+                      <WithdrawControl application={r} />
+                    ) : (
+                      <span>Final status</span>
+                    ),
+                },
+              ]),
         ]}
       />
       {selected && (
-        <ConfirmDialog
-          title={`Update application #${selected.id}`}
-          pending={mutation.isPending}
-          error={mutation.error}
+        <ApplicationReviewDialog
+          application={selected}
           onClose={() => setSelected(null)}
-          onConfirm={async () => {
-            try {
-              await mutation.mutateAsync({
-                path: `/admin/applications/${selected.id}/status`,
-                method: 'patch',
-                body: { status, remarks },
-              });
-              toast('Application status recorded.');
-              setSelected(null);
-            } catch {
-              /* Server decides valid transitions. */
-            }
-          }}
-        >
-          <div className="space-y-4">
-            <p>
-              Current status: {selected.status}. The server validates this
-              transition and records its history.
-            </p>
-            <Field
-              label="New application status"
-              as="select"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              {['shortlisted', 'selected', 'rejected'].map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </Field>
-            <Field
-              label="Remarks"
-              as="textarea"
-              maxLength={1000}
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
-          </div>
-        </ConfirmDialog>
+        />
       )}
     </>
   );

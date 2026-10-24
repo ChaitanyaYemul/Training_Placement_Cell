@@ -12,6 +12,7 @@ import CompanyPage from '../pages/shared/CompanyPage.jsx';
 import DrivesPage from '../pages/shared/DrivesPage.jsx';
 import DrivePage from '../pages/shared/DrivePage.jsx';
 import ApplicationsPage from '../pages/shared/ApplicationsPage.jsx';
+import ApplicationDetailPage from '../pages/shared/ApplicationDetailPage.jsx';
 import AnnouncementsPage from '../pages/shared/AnnouncementsPage.jsx';
 import ProfilePage from '../pages/student/ProfilePage.jsx';
 import CatalogEditor from '../pages/admin/CatalogEditor.jsx';
@@ -22,6 +23,7 @@ const shared = (role) => [
   { path: `/${role}/drives`, element: <DrivesPage /> },
   { path: `/${role}/drives/:id`, element: <DrivePage /> },
   { path: `/${role}/applications`, element: <ApplicationsPage /> },
+  { path: `/${role}/applications/:id`, element: <ApplicationDetailPage /> },
   { path: `/${role}/announcements`, element: <AnnouncementsPage /> },
 ];
 export const routes = [

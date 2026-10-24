@@ -26,7 +26,7 @@ Express listens on port 3000; Vite listens on 5173. Verify actual readiness with
 
 ## Accounts and frontend flows
 
-Open `/register` to create a student, then sign in on `/login`. Complete `/student/profile` and save semester records separately. Company/drive lists are paginated; drive details display eligibility provided by the backend, recruitment rounds, schedules and informational document checklists. Documents are not uploaded. Existing application statuses are available; submission, withdrawal and history-detail APIs are deferred.
+Open `/register` to create a student, then sign in on `/login`. Complete `/student/profile` and save semester records separately. Company/drive lists are paginated; drive details display eligibility provided by the backend, recruitment rounds, schedules and informational document checklists. Documents are not uploaded. Apply from a published drive that meets your eligibility, confirm submission, then view the application/history page. The server checks profile completeness and the actual database deadline. Withdrawal is available while an application is applied or shortlisted, is final, and does not delete history. Archived-drive context remains visible inside your own application history.
 
 Provision administrators through `npm run admin:create -w backend` using secure operator-supplied ADMIN_EMAIL, ADMIN_NAME and ADMIN_PASSWORD environment bindings; clear them afterward. Never pass a password as a command-line flag. Administrator registration is unavailable in the UI/API. The admin workspace manages companies and their postings, drives, rounds/schedules, announcements and selection statuses. Posting ids shown under a company's job list identify the posting when creating a drive. A drive stays draft until its prerequisites are met. Recruitment saves and publication are separate operations.
 
@@ -60,4 +60,4 @@ Optional `npm run test:outage -w backend` actually stops/restarts only the helpe
 
 If npm's cache is unwritable, use `NPM_CONFIG_CACHE=/tmp/placement-npm-cache`; no checks are disabled. The known session-store upstream mysql2 exact-pin mismatch can make `npm ls mysql2` flag the documented patched override even though installation, audit and real session tests succeed.
 
-Production deployment, reports, application submission/withdrawal/history-detail APIs and general reconciliation remain deferred. `reconcile` is still an explicit reservation. Database schema regeneration is available through `npm run db:schema -w backend` only when migrations intentionally change.
+Production deployment, reports and general reconciliation remain deferred. `reconcile` is still an explicit reservation. Database schema regeneration is available through `npm run db:schema -w backend` only when migrations intentionally change.
