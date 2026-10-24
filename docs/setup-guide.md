@@ -1,95 +1,63 @@
-# Phase 3 full backend setup
+# Local development and verification
 
-The business API commit requires both configured databases at startup. Run `npm run db:migrate -w backend` and `npm run mongo:setup -w backend` with schema-owner privileges before `npm run dev`; runtime auto-creation remains disabled. Supply session/CSRF secrets securely. The frontend remains a public preview; use an HTTP client with cookies and the documented CSRF sequence to exercise the APIs.
+## Prerequisites
 
-For independent verification, authentication commit `80f7739` supports `npm run test:auth -w backend` before any business API files exist. At the business commit use `npm run test:business -w backend` for its HTTP/DB suite. Run `npm run test:backend -w backend` for all backend suites sequentially; they reset shared disposable `_test` databases and must not run in parallel.
+Use Node 24.x LTS, npm 11.x, MySQL 8.4 LTS (minimum 8.0.16; MariaDB is not supported), and MongoDB 8.0 or a supported newer release. Run `npm ci` at the repository root. The lockfile remains unchanged in Phase 4.
 
-The optional `npm run test:outage -w backend` requires the exact helper-created local MongoDB test container/URI and Docker. It intentionally stops `placement-phase2-mongo`, verifies degraded drive reads and HTTP 503 on writes while MySQL stays available, and restarts Mongo in finally. It is separate from the generic suites, so externally supplied test instances are not stopped. No test is silently skipped.
+## Development settings
 
-## Authentication setup reference
+Create an empty MySQL development database using administration tools. Copy `backend/.env.example` to ignored `backend/.env` and configure actual database bindings. Generate unique SESSION_SECRET and CSRF_SECRET values securely (at least 32 characters; example placeholders are rejected). Do not print or commit credentials. The full backend requires both databases at cold startup.
 
-Install from the root with `npm ci`. Configure backend/.env with actual local MySQL credentials plus unique SESSION_SECRET and CSRF_SECRET values (at least 32 characters, generated securely). The provided example values are placeholders and cannot be used to start authentication. Set NODE_ENV appropriately, CLIENT_ORIGIN to exact allowed origins, SESSION_MAX_AGE_MS for idle expiry and TRUST_PROXY_HOPS only for your actual reverse-proxy path.
+Set CLIENT_ORIGIN to the exact browser origin, for example `http://localhost:5173`. If you also use `http://127.0.0.1:5173`, include it in the comma-separated allowlist. Keep a consistent hostname while signing in; cookies are host-specific. Development uses same-origin `/api` through Vite. Frontend settings are optional: VITE_API_BASE_URL defaults to `/api`, API_PROXY_TARGET defaults to `http://127.0.0.1:3000`, and VITE_INSTITUTION_TIMEZONE defaults to `Asia/Kolkata`. No credentials belong in VITE variables.
 
-Apply `npm run db:migrate -w backend` before starting; new migration 0018 adds the persistent session table without changing historical migrations. Then `npm run dev` starts Vite and the authentication API. The runtime requires real MySQL access. GET /api/health remains process liveness, with no per-request database-readiness guarantee.
-
-For test services run `npm run test:db:services -w backend`. Existing backend/.env.test bindings are preserved; the helper adds missing generated session/CSRF bindings only for its compatible local test setup. Ensure this ignored test file contains secure SESSION_SECRET/CSRF_SECRET bindings as well as its disposable database settings. Run `npm run test:db -w backend` and `npm run test:auth -w backend` sequentially because they reset the same test schemas. Each suite refuses names not ending in `_test`. No authentication integration test uses MemoryStore.
-
-For admin provisioning set ADMIN_EMAIL, ADMIN_NAME and ADMIN_PASSWORD securely for one `npm run admin:create -w backend` invocation, then clear those variables. The CLI validates inputs, hashes the password and transactionally creates the user/admin profile. Never pass passwords as command-line flags or create admin accounts via public registration.
-
-`npm run check` runs ordinary tests, lint, formatting and the frontend build. Browser smoke checks need the backend environment configured and free ports 3000/5173. Use the preinstalled Chromium override documented below. See security.md for CSRF token sequencing and secure proxy/cookie configuration.
-
-## Phase 2 database setup reference
-
-# Local development and database setup
-
-Use Node 24.x and npm 11.x. From the repository root, run `npm ci`. `npm run dev` still starts the frontend and the public health-only Express API without requiring databases. The existing React/Express architecture and API contract remain unchanged.
-
-## Development database configuration
-
-Provision MySQL 8.4 LTS (minimum 8.0.16; MariaDB is not supported by these migrations) and MongoDB 8.0 or a newer supported release. Create an empty MySQL application database with utf8mb4/utf8mb4_0900_ai_ci using your database administration tools; the migration runner intentionally does not create databases.
-
-Copy `backend/.env.example` to `backend/.env` and enter your local values securely. Never commit either actual credentials or `.env`. Commands run from the root use `-w backend` to load backend/.env. `MYSQL_*` settings are required for MySQL commands; `MONGODB_URI` must include an explicit database path for Mongo commands. Health-only startup needs neither. Use a migration/schema-owner account for schema operations and a separate least-privileged runtime account later. Database/authentication credentials never belong in frontend VITE_* variables.
+Use schema-owner credentials for initialization, then a separate runtime MySQL account limited to SELECT/INSERT/UPDATE/DELETE on the development schema. The migration account requires DDL privileges; the runtime account does not. For local Docker networking, limit its host grant to the observed application connection source, not a wildcard. Bind database ports only to loopback. MongoDB production authentication and privileges must be configured by the operator; the disposable local test Mongo service is not a deployment configuration.
 
 ```sh
-npm run db:check -w backend
 npm run db:migrate -w backend
-npm run db:migrate -w backend # repeat run is a no-op
 npm run mongo:setup -w backend
-npm run mongo:setup -w backend # repeat run preserves documents
 npm run db:seed -w backend
-npm run db:seed -w backend # preserves existing data
+npm run db:check -w backend
+npm run dev
 ```
 
-`db:check` performs real connectivity/version checks but does not prove migrations or application authorization. MySQL seeds create two branches, a fictional company and one posting. They do not create users, students, administrators, drives, applications or password hashes. This avoids inventing authentication/hashing before Phase 3.
+Workspace backend commands load backend/.env. Migrations must be rerunnable without changing historical SQL files. Mongo schema setup preserves documents. Runtime auto-creation is disabled. The reference seed creates branches and fictional companies/postings, without user accounts or password hashes. Sample seed commands refuse production. Optional Mongo seeding requires real existing drive/admin references (`npm run mongo:seed -w backend -- DRIVE_ID AUTHOR_USER_ID`).
 
-Mongo samples need an already existing MySQL drive and active-admin user. For a development database where those records legitimately exist, run:
+Express listens on port 3000; Vite listens on 5173. Verify actual readiness with `/api/health` on both ports, then exercise authentication; health is process liveness and does not assert database readiness. `npm run db:check -w backend` independently verifies real database connectivity.
 
-```sh
-npm run mongo:seed -w backend -- DRIVE_ID AUTHOR_USER_ID
-```
+## Accounts and frontend flows
 
-Replace both labels with positive integer ids. Missing references are rejected before Mongo writes; existing documents are preserved. With only this phase's reference seed, those ids do not exist, so defer this optional command. Real integration tests create isolated test fixtures and exercise Mongo sample seeding. All sample seed commands refuse NODE_ENV=production.
+Open `/register` to create a student, then sign in on `/login`. Complete `/student/profile` and save semester records separately. Company/drive lists are paginated; drive details display eligibility provided by the backend, recruitment rounds, schedules and informational document checklists. Documents are not uploaded. Existing application statuses are available; submission, withdrawal and history-detail APIs are deferred.
 
-`npm run db:schema -w backend` regenerates mysql/schema.sql from migrations. Never edit an applied/committed migration. See database-ownership.md for interrupted-DDL recovery; MySQL DDL does not roll back as a whole batch.
+Provision administrators through `npm run admin:create -w backend` using secure operator-supplied ADMIN_EMAIL, ADMIN_NAME and ADMIN_PASSWORD environment bindings; clear them afterward. Never pass a password as a command-line flag. Administrator registration is unavailable in the UI/API. The admin workspace manages companies and their postings, drives, rounds/schedules, announcements and selection statuses. Posting ids shown under a company's job list identify the posting when creating a drive. A drive stays draft until its prerequisites are met. Recruitment saves and publication are separate operations.
 
-## Real integration tests
+Production cookies require HTTPS, NODE_ENV=production and the correct TRUST_PROXY_HOPS for the actual trusted proxy path. Preserve exact-origin credentialed CORS and CSRF. See security.md.
 
-Database tests are explicit: `npm test` runs ordinary component/backend tests; `npm run test:db -w backend` runs the real MySQL/MongoDB suite. No test is silently skipped or backed by an in-memory substitute. Both names must end in `_test`; the safety check happens before destructive setup. The suite **drops and recreates the configured MySQL test database and drops the Mongo test database**. Never configure development/production data, even under a misleading test name. The test-only MySQL user needs create/drop privileges for that disposable schema.
+## Disposable integration-test services
 
-### Optional local Docker test services
-
-Docker is used here only to run isolated actual database instances, with no Compose configuration added. With a running Docker daemon:
+Configure backend/.env.test from its example with dedicated disposable MySQL/MongoDB names ending in `_test`, including session/CSRF secrets. Alternatively, with Docker available:
 
 ```sh
 npm run test:db:services -w backend
-npm run test:db -w backend
 ```
 
-The helper securely generates ignored `backend/.env.test` if missing, using a random local MySQL root password. It preserves an existing file; compatible settings must be NODE_ENV=test, loopback hosts, a disposable database ending in `_test`, and a local root test user. Existing custom/remote settings should use the manual path below. Docker credentials are passed through a mode-0600 temporary environment file, never command-line password arguments; temporary files are removed afterward.
+The helper securely generates a missing mode-0600 `.env.test`, preserves existing database bindings, adds missing test session/CSRF bindings, and starts digest-pinned actual MySQL/MongoDB containers named placement-phase2-mysql and placement-phase2-mongo. Default ports are loopback 3307 and 27018. It preserves existing containers and rejects incompatible images/ports or nonlocal/custom settings. For external dedicated test instances use the manual `.env.test` configuration instead.
 
-The containers are named `placement-phase2-mysql` and `placement-phase2-mongo`, with default bindings **127.0.0.1:3307** and **127.0.0.1:27018**. The helper pulls digest-pinned official MySQL 8.4 and MongoDB 8.0 images, reuses compatible existing containers, waits for real database checks, and never deletes an existing container. Ports/images that conflict cause a failure rather than replacement. No host directory is mounted. MongoDB is unauthenticated only in this local, loopback-bound disposable test instance. Never expose it to public interfaces or use this test helper for a deployment.
+These live services may need restarting after cloud snapshots. To stop only those services use `docker stop placement-phase2-mysql placement-phase2-mongo`. Never use their unauthenticated local Mongo configuration as a public deployment.
 
-Rerun the helper after restarting the machine. Live database processes must not be assumed to survive cloud snapshots. To stop only these test services, run:
-
-```sh
-docker stop placement-phase2-mysql placement-phase2-mongo
-```
-
-### Existing database instances
-
-Copy `backend/.env.test.example` to `backend/.env.test` and set values for your dedicated instances. Preserve any existing file, and use secure values. Do not load `.env` instead. Then run `npm run test:db -w backend`. The generated local file can be reused on this machine; no credential is committed. The example lists configuration names only; placeholder passwords do not establish connectivity.
-
-Database test cases reset the dedicated schemas, run migrations and seeds, verify repeatability, test SQL constraints/FKs/delete guards/rollback/concurrent uniqueness, reject invalid Mongo documents through models and raw writes, and run real aggregation/EXPLAIN demonstrations. Latest EXPLAIN output is written to ignored `test-results/database-explain.json`; documentation records the observed fixture-scale plans.
-
-## Application checks
+## Checks
 
 ```sh
 npm run check
-npm run test:integration -w backend
-npm audit
+npm run test:backend -w backend
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 ```
 
-The Chromium override applies to this cloud machine's preinstalled browser; on another machine install Chromium using Playwright's verified installer instead. Browser download restrictions remain separate from application correctness. Keep ports 3000 and 5173 free when Playwright launches the apps. `npm run dev -w backend` and `npm run dev -w frontend` also work separately. Vite proxies `/api` to port 3000; changing ports requires corresponding proxy/CORS configuration changes.
+`check` runs lint, formatting, ordinary frontend/backend tests and the frontend build. `test:backend` runs ordinary, database, authentication and business suites sequentially. The database suites **drop/recreate only their configured disposable `_test` schemas**. They must not run concurrently with each other or E2E. For focused checks, use `test:db`, `test:auth`, or `test:business` in the backend workspace.
 
-If npm's default cache is unwritable in a sandbox, prefix commands with `NPM_CONFIG_CACHE=/tmp/placement-npm-cache`; no verification is disabled. `admin:create` and `reconcile` remain explicit non-working reservations. No authentication, protected endpoints, student/admin business features, production deployment or cross-database reconciliation is implemented in Phase 2.
+E2E explicitly loads backend/.env.test, resets those disposable schemas, installs validators and creates fictional test-only accounts. Its two preset accounts are admin-test@example.edu and student-test@example.edu, with the test-only password defined in tests/e2e/helpers.js. They are not created in development. Playwright starts/stops the real backend and Vite, with ports 3000/5173 free. The auth attempt limit is configured to its supported maximum for the suite; CSRF, Origin checks, roles, persistent sessions and the global rate limiter remain enabled. The suite waits for rate-limit capacity when necessary. Run it with a verified Playwright Chromium installation or the executable-path override above.
+
+Optional `npm run test:outage -w backend` actually stops/restarts only the helper-created local Mongo test container, then verifies degraded SQL-backed reads, 503 writes and recovery. Run it separately. It does not support external test Mongo instances.
+
+If npm's cache is unwritable, use `NPM_CONFIG_CACHE=/tmp/placement-npm-cache`; no checks are disabled. The known session-store upstream mysql2 exact-pin mismatch can make `npm ls mysql2` flag the documented patched override even though installation, audit and real session tests succeed.
+
+Production deployment, reports, application submission/withdrawal/history-detail APIs and general reconciliation remain deferred. `reconcile` is still an explicit reservation. Database schema regeneration is available through `npm run db:schema -w backend` only when migrations intentionally change.

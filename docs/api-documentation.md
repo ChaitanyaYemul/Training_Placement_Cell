@@ -70,4 +70,8 @@ Students never receive draft/archived drive details or inactive companies; absen
 
 During a Mongo outage, drive detail returns the MySQL data, `recruitment:null` and `warnings:[{code:"RECRUITMENT_DATA_UNAVAILABLE"}]`. Recruitment writes return 503 and leave the SQL drive unchanged. Draft deletion commits SQL first; failed Mongo cleanup returns `RECRUITMENT_CLEANUP_PENDING` and logs the drive id for later reconciliation. Do not blindly repeat the DELETE after a lost response; refetch the resource. General reconciliation remains unimplemented.
 
-Application submission, withdrawal, report endpoints, authentication UI and complete student/admin frontend workflows are not implemented in this phase. Existing test application rows are isolated fixtures; do not interpret their presence as an implemented apply flow.
+Application submission, withdrawal, application-history detail and report endpoints remain deferred. Phase 4 adds frontend authentication and workspaces using the implemented endpoints; see architecture/phase-4-frontend.md. Existing test application rows are isolated fixtures; do not interpret their presence as an implemented apply flow.
+
+## Phase 4 client integration
+
+The React client now uses the existing session/CSRF APIs and business endpoints. No backend endpoint, schema or response contract changes in this phase. The client preserves pagination metadata, warnings and 204 behavior. Student registration leads to sign-in. Login rotates CSRF; logout clears the client cache after server success. Backend roles and ownership remain authoritative. See architecture/phase-4-frontend.md for routes, query invalidation and deferred capabilities.

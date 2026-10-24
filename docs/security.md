@@ -18,4 +18,10 @@ Every business router requires an authoritative active session. Administrator ga
 
 The REST implementation keeps SQL and MongoDB calls in repositories. Drive/branch writes and academic replacements are transactional; application status changes lock their row and insert history in the same transaction. Publication/recruitment edits lock the MySQL drive to serialize precondition checks without pretending the Mongo write is part of a shared transaction. MongoDB errors degrade drive reads or return sanitized 503 for required writes. A real local Mongo outage test verifies the write error path. Orphan cleanup after draft deletion remains explicitly pending when Mongo is unavailable.
 
-The full backend requires both databases at cold startup; read degradation covers a running instance's Mongo outage. Production deployment, distributed rate-limit storage, full session revocation/password-change workflows and frontend auth integration remain outside this phase.
+The full backend requires both databases at cold startup; read degradation covers a running instance's Mongo outage. Production deployment, distributed rate-limit storage, and full session revocation/password-change workflows remain outside this phase. Frontend auth integration is described below.
+
+## Phase 4 browser integration
+
+CSRF is kept only in memory, bootstrapped with cookie credentials, and replaced on session regeneration. No browser storage holds authentication tokens. Auth failure clears protected query data; invalid login does not masquerade as a session-expiry event. Service errors remain visible and do not silently label the user anonymous. Logout waits for the server; failed logout retains the signed-in state and shows an error. Session generations prevent late responses from another login from repopulating private caches. Revalidation detects a changed user/role and removes resource caches.
+
+Protected routes and role-aware navigation complement the existing server checks. Form fields map validation details to accessible errors, writes wait for server confirmation, and failed writes are not retried automatically. Plain-text announcements use React escaping; link protocols remain validated by the API. Production hardening and deployment are not claimed by local browser verification.
