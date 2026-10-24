@@ -29,7 +29,7 @@ export default function ApiStatus() {
               {data.status === 'ok' ? 'API connected' : 'API status unknown'}
             </p>
             <p className="mt-1 text-sm text-stone-600">
-              Database connections are not configured.
+              Database readiness is not checked by this endpoint.
             </p>
           </>
         )}

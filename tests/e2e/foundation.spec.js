@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, assertNoOverflow } from './helpers.js';
 for (const width of [375, 1280]) {
-  test(`foundation navigation and live API at ${width}px`, async ({ page }) => {
+  test(`public navigation and live API at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -15,34 +15,20 @@ for (const width of [375, 1280]) {
       window.__navigationMarker = 'same-document';
     });
     await page
-      .getByRole('navigation')
-      .getByRole('link', { name: 'Student', exact: true })
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByRole('link', { name: 'Sign in', exact: true })
       .click();
     await expect(
-      page.getByRole('heading', { name: 'Student workspace', exact: true }),
+      page.getByRole('heading', { name: 'Welcome back' }),
     ).toBeVisible();
     expect(await page.evaluate(() => window.__navigationMarker)).toBe(
       'same-document',
     );
-    await expect(
-      page.getByText(/This is not an authenticated dashboard/),
-    ).toBeVisible();
-    await page
-      .getByRole('navigation')
-      .getByRole('link', { name: 'Admin', exact: true })
-      .click();
-    await expect(
-      page.getByRole('heading', { name: 'Admin workspace', exact: true }),
-    ).toBeVisible();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth,
-      ),
-    ).toBe(true);
     await page.reload();
     await expect(
-      page.getByRole('heading', { name: 'Admin workspace', exact: true }),
+      page.getByRole('heading', { name: 'Welcome back' }),
     ).toBeVisible();
+    await assertNoOverflow(page);
     await page.goto('/missing');
     await expect(
       page.getByRole('heading', { name: 'Page not found' }),

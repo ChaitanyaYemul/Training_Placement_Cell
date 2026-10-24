@@ -27,7 +27,7 @@ export default function HomePage() {
               className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-emerald-950"
               to="/student/dashboard"
             >
-              Explore student workspace <span aria-hidden="true">↗</span>
+              Student workspace <span aria-hidden="true">↗</span>
             </Link>
             <Link
               className="rounded-xl border border-emerald-700 px-5 py-3 text-sm font-semibold"
@@ -40,24 +40,24 @@ export default function HomePage() {
       </section>
       <div className="my-8 flex flex-wrap items-center gap-3 text-sm text-stone-600">
         <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-          Foundation preview
+          Campus placements
         </span>
         <p>
-          Workspace previews only. Authentication and placement features are
-          planned.
+          Sign in to manage your profile, discover placement drives, and read
+          official updates.
         </p>
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         <Card eyebrow="01 / For students" title="A clearer path to placement">
           <p>
-            Profile, opportunities, applications, and announcements will come
+            Profile, opportunities, applications, and announcements come
             together in your student workspace.
           </p>
           <Link
             className="mt-4 inline-block font-semibold text-emerald-900 underline underline-offset-4"
             to="/student/dashboard"
           >
-            View student preview
+            Open student workspace
           </Link>
         </Card>
         <Card
@@ -66,13 +66,13 @@ export default function HomePage() {
         >
           <p>
             Company records, placement drives, recruitment schedules, and
-            reports will support the cell’s daily work.
+            reports support the cell’s daily work.
           </p>
           <Link
             className="mt-4 inline-block font-semibold text-emerald-900 underline underline-offset-4"
             to="/admin/dashboard"
           >
-            View admin preview
+            Open admin workspace
           </Link>
         </Card>
       </div>

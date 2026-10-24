@@ -1,5 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth.js';
+import { Button, FormErrors } from '../components/ui.jsx';
 export default function AppLayout() {
+  const { user, logout } = useAuth();
   return (
     <div className="min-h-screen">
       <a
@@ -9,7 +12,7 @@ export default function AppLayout() {
         Skip to content
       </a>
       <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-5 px-5 py-5 sm:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <NavLink
             to="/"
             className="flex items-center gap-3"
@@ -23,36 +26,56 @@ export default function AppLayout() {
             </span>
             <span className="font-semibold tracking-tight">
               Placement Cell
-              <span className="block text-xs font-normal tracking-normal text-stone-500">
+              <span className="block text-xs font-normal text-stone-500">
                 Training & Placement
               </span>
             </span>
           </NavLink>
           <nav
             aria-label="Main navigation"
-            className="flex flex-wrap gap-2 text-sm font-medium"
+            className="flex flex-wrap items-center gap-2 text-sm font-medium"
           >
-            <NavLink to="/" end className="nav-link">
+            <NavLink className="nav-link" to="/" end>
               Overview
             </NavLink>
-            <NavLink to="/student/dashboard" className="nav-link">
-              Student
-            </NavLink>
-            <NavLink to="/admin/dashboard" className="nav-link">
-              Admin
-            </NavLink>
+            {user ? (
+              <>
+                <NavLink className="nav-link" to={`/${user.role}/dashboard`}>
+                  My workspace
+                </NavLink>
+                <Button
+                  variant="secondary"
+                  disabled={logout.isPending}
+                  onClick={() => logout.mutate()}
+                >
+                  {logout.isPending ? 'Signing out…' : 'Sign out'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <NavLink className="nav-link" to="/login">
+                  Sign in
+                </NavLink>
+                <NavLink className="button button-primary" to="/register">
+                  Register
+                </NavLink>
+              </>
+            )}
           </nav>
         </div>
       </header>
       <main
         id="main-content"
-        className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16"
+        className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12"
       >
+        <FormErrors
+          error={logout.error?.status === 401 ? null : logout.error}
+        />
         <Outlet />
       </main>
-      <footer className="mx-auto flex max-w-6xl flex-wrap justify-between gap-3 px-5 py-8 text-xs text-stone-500 sm:px-8">
+      <footer className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 px-5 py-8 text-xs text-stone-500 sm:px-8">
         <p>College Training and Placement Cell</p>
-        <p>Phase 1 · Development foundation</p>
+        <p>Campus to career, together.</p>
       </footer>
     </div>
   );

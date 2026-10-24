@@ -30,7 +30,7 @@ describe('API status', () => {
     expect(screen.getByText('Connecting to the API…')).toBeInTheDocument();
     expect(await screen.findByText('API connected')).toBeInTheDocument();
     expect(
-      screen.getByText('Database connections are not configured.'),
+      screen.getByText('Database readiness is not checked by this endpoint.'),
     ).toBeInTheDocument();
   });
   it('shows an actionable network error', async () => {
