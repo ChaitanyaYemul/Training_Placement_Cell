@@ -17,6 +17,7 @@ import AnnouncementsPage from '../pages/shared/AnnouncementsPage.jsx';
 import ProfilePage from '../pages/student/ProfilePage.jsx';
 import CatalogEditor from '../pages/admin/CatalogEditor.jsx';
 import RecruitmentEditor from '../pages/admin/RecruitmentEditor.jsx';
+import ReportsRoute from './ReportsRoute.jsx';
 const shared = (role) => [
   { path: `/${role}/companies`, element: <CompaniesPage /> },
   { path: `/${role}/companies/:id`, element: <CompanyPage /> },
@@ -60,6 +61,10 @@ export const routes = [
                 element: <WorkspaceLayout role="admin" />,
                 children: [
                   { path: '/admin/dashboard', element: <AdminDashboard /> },
+                  {
+                    path: '/admin/reports',
+                    element: <ReportsRoute />,
+                  },
                   ...shared('admin'),
                   {
                     path: '/admin/companies/new',

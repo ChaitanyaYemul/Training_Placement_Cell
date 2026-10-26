@@ -57,7 +57,8 @@ export default function AcademicForm({ initial }) {
       {rows.map((row, index) => (
         <fieldset
           key={index}
-          className="rounded-xl border border-stone-200 p-4"
+          disabled={mutation.isPending}
+          className="min-w-0 rounded-xl border border-stone-200 p-4"
         >
           <legend>Record {index + 1}</legend>
           <div className="grid gap-4 sm:grid-cols-2">

@@ -1,5 +1,4 @@
 import FilterBar from './FilterBar.jsx';
-import { Link } from 'react-router-dom';
 import { Pagination, QueryState, StatusBadge } from './ui.jsx';
 import { formatDate } from '../utils/dates.js';
 export default function AnnouncementFeed({ query, filters }) {
@@ -23,12 +22,10 @@ export default function AnnouncementFeed({ query, filters }) {
               </p>
               <p className="whitespace-pre-wrap break-words">{r.body}</p>
               {r.relatedDriveId && (
-                <Link
-                  className="text-link mt-3 inline-block"
-                  to={`/student/drives/${r.relatedDriveId}`}
-                >
-                  Related drive (may no longer be available)
-                </Link>
+                <p className="mt-3 text-sm text-stone-600">
+                  Related placement drive #{r.relatedDriveId}. Current drives
+                  are available in Placement drives.
+                </p>
               )}
               <ul className="mt-4 space-y-2">
                 {r.links?.map((link) => (

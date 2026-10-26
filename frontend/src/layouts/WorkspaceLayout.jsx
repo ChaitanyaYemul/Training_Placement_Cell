@@ -14,6 +14,7 @@ const adminLinks = [
   ['drives', 'Placement drives'],
   ['applications', 'Applications'],
   ['announcements', 'Announcements'],
+  ['reports', 'Reports'],
 ];
 export default function WorkspaceLayout({ role }) {
   const { user } = useAuth();

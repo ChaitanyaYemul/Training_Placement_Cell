@@ -77,13 +77,18 @@ export function QueryState({ query, children, empty = false }) {
     );
   if (query.isError && query.data === undefined)
     return <ErrorState error={query.error} retry={() => query.refetch()} />;
-  if (empty) return <p className="notice">No records found.</p>;
   return (
     <>
       {query.isError && (
         <ErrorState error={query.error} retry={() => query.refetch()} />
       )}
-      {children}
+      {empty ? (
+        <p role="status" className="notice">
+          No records found.
+        </p>
+      ) : (
+        children
+      )}
     </>
   );
 }

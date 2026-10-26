@@ -1,4 +1,5 @@
 import mysql from 'mysql2/promise';
+import { randomBytes } from 'node:crypto';
 import {
   assertTestDatabase,
   getMysqlSettings,
@@ -19,8 +20,14 @@ export function requireTestSettings() {
   assertTestDatabase(mongoDatabaseName(mongo.MONGODB_URI));
   return { mysql, mongo };
 }
-export async function freshMysql() {
-  const { mysql: settings } = requireTestSettings();
+export async function freshMysql({ useConfiguredName = false } = {}) {
+  const { mysql: configured } = requireTestSettings();
+  const settings = {
+    ...configured,
+    MYSQL_DATABASE: useConfiguredName
+      ? configured.MYSQL_DATABASE
+      : `placement_${randomBytes(8).toString('hex')}_test`,
+  };
   const admin = await mysql.createConnection({
     host: settings.MYSQL_HOST,
     port: settings.MYSQL_PORT,
@@ -29,7 +36,6 @@ export async function freshMysql() {
   });
   try {
     // Test settings and suffix were validated before even opening a connection.
-    await admin.query('DROP DATABASE IF EXISTS ??', [settings.MYSQL_DATABASE]);
     await admin.query(
       'CREATE DATABASE ?? CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci',
       [settings.MYSQL_DATABASE],
@@ -42,11 +48,13 @@ export async function freshMysql() {
   await seedMysql(pool);
   return { pool, applied };
 }
-export async function freshMongo() {
+export async function freshMongo({ useConfiguredName = false } = {}) {
   const { mongo } = requireTestSettings();
-  const connection = await connectMongo(mongo);
+  const uri = new URL(mongo.MONGODB_URI);
+  if (!useConfiguredName)
+    uri.pathname = `/placement_${randomBytes(8).toString('hex')}_test`;
+  const connection = await connectMongo({ MONGODB_URI: uri.toString() });
   assertTestDatabase(connection.name);
-  await connection.dropDatabase();
   return connection;
 }
 export async function clearMongo(connection) {

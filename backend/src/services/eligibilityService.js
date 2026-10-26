@@ -21,3 +21,19 @@ export function evaluateEligibility(drive, academic, branches) {
     failedCriteria.push('BRANCH');
   return { eligible: failedCriteria.length === 0, failedCriteria };
 }
+
+/** BR-15 is shared by submission and current-eligibility reporting. */
+export function missingApplicationProfile(profile) {
+  const missing = [
+    'fullName',
+    'enrollmentNumber',
+    'branchId',
+    'graduationYear',
+  ].filter(
+    (key) =>
+      !profile[key] ||
+      (typeof profile[key] === 'string' && !profile[key].trim()),
+  );
+  if (!profile.academic) missing.push('academicRecords');
+  return missing;
+}

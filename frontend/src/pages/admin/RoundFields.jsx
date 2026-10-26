@@ -8,7 +8,10 @@ export default function RoundFields({
   pending,
 }) {
   return (
-    <fieldset className="rounded-xl border border-stone-200 p-4">
+    <fieldset
+      disabled={pending}
+      className="min-w-0 rounded-xl border border-stone-200 p-4"
+    >
       <legend>Round {index + 1}</legend>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field

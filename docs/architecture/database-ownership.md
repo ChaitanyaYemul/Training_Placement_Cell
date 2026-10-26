@@ -7,7 +7,7 @@
 | users, students, admins, branches, academic records                                   | MySQL   | Foreign keys; no Mongo copies                              |
 | companies, job postings, placement drive core/eligibility                             | MySQL   | One posting per drive; eligible branches via bridge        |
 | applications and status history                                                       | MySQL   | InnoDB transactions; protected history                     |
-| future sessions                                                                       | MySQL   | Store-specific schema deferred to Phase 3                  |
+| sessions                                                                              | MySQL   | Persistent app_sessions store (migration 0018)             |
 | recruitment rounds, schedules, document checklists, per-drive company process details | MongoDB | Integer placementDriveId reference                         |
 | announcements                                                                         | MongoDB | Optional relatedDriveId; author/branch ids reference MySQL |
 
@@ -25,7 +25,7 @@ MySQL migrations are one trusted SQL statement per numbered immutable file, chec
 
 If interrupted, inspect the `started` filename, SHOW CREATE TABLE/VIEW/TRIGGER, and the schema_migrations ledger. Resolve the actual DDL outcome in a dedicated maintenance task; never automatically delete the ledger row or run an inverse DROP against development/production. Test suites intentionally recreate only verified `_test` databases.
 
-MySQL reference/sample seeds run in a transaction under a seed advisory lock. Repeated seeds do not overwrite local changes. They create branches, a fictional company and one job posting, with no accounts, password hashes or student data. Mongo samples require an existing drive and active administrator and preserve existing documents. Seeds refuse NODE_ENV=production. Demo accounts remain deferred until authentication/hashing is approved.
+MySQL reference/sample seeds run in a transaction under a seed advisory lock. Repeated seeds do not overwrite local changes. They create branches, a fictional company and one job posting, with no accounts, password hashes or student data. Mongo samples require an existing drive and active administrator and preserve existing documents. Seeds refuse NODE_ENV=production. Demo accounts are provisioned separately using Argon2id; see ../../DEMO.md.
 
 ## Connections and privileges
 
@@ -35,4 +35,4 @@ A future runtime MySQL account should have only required SELECT/INSERT/UPDATE/DE
 
 ## Cross-database consistency
 
-No shared transaction exists. Future flows must use the ordering/retry rules in AGENTS.md §7.4; relational master records commit first where appropriate, and Mongo writes remain retryable. Mongo lookup ids must be checked in MySQL. Read degradation and orphan reconciliation are documented requirements, not implemented features. The sample-seed service alone demonstrates checked references and idempotent cross-database sample creation, without introducing placement business endpoints.
+No shared transaction exists. Implemented flows use the ordering/retry rules in AGENTS.md §7.4; relational master records commit first where appropriate, and Mongo writes remain retryable. Mongo lookup ids must be checked in MySQL. Read degradation and operator orphan reconciliation are implemented; see reconciliation.md. The sample-seed service alone demonstrates checked references and idempotent cross-database sample creation, without introducing placement business endpoints.

@@ -1,5 +1,3 @@
-import { logger } from '../src/config/logger.js';
-logger.error(
-  'This command is reserved for a later phase. No database or account changes were performed.',
-);
-process.exitCode = 1;
+// Compatibility for the original reconciliation command path.
+if (process.argv[2] === 'reconcile') process.argv.splice(2, 1);
+await import('./reconcile.js');

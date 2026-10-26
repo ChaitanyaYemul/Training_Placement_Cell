@@ -10,11 +10,16 @@ import { announcementService } from '../services/announcementService.js';
 import { applicationStatusService } from '../services/applicationStatusService.js';
 import { studentApplicationService } from '../services/studentApplicationService.js';
 import { businessRoutes } from '../routes/businessRoutes.js';
+import { reportRepository } from '../repositories/reportRepository.js';
+import { reportEligibilityRepository } from '../repositories/reportEligibilityRepository.js';
+import { reportRecruitmentRepository } from '../repositories/reportRecruitmentRepository.js';
+import { reportService } from '../services/reportService.js';
+import { reportRoutes } from '../routes/reportRoutes.js';
 export function businessDependencies(
   pool,
   mongo,
   settings,
-  { recruitment } = {},
+  { recruitment, reportRecruitment } = {},
 ) {
   const repositories = {
     pool,
@@ -24,6 +29,9 @@ export function businessDependencies(
     recruitment: recruitment || recruitmentRepository(mongo),
     announcements: announcementRepository(mongo),
     applications: applicationRepository(pool),
+    reports: reportRepository(),
+    reportEligibility: reportEligibilityRepository(),
+    reportRecruitment: reportRecruitment || reportRecruitmentRepository(mongo),
   };
   const services = {
     catalog: catalogService(repositories),
@@ -33,7 +41,10 @@ export function businessDependencies(
       ...applicationStatusService(pool, repositories.applications),
       ...studentApplicationService(repositories),
     },
+    reports: reportService(repositories),
   };
-  return (app, auth) =>
+  return (app, auth) => {
+    app.use('/api/admin/reports', reportRoutes(services.reports, auth));
     app.use('/api', businessRoutes(services, auth, settings));
+  };
 }

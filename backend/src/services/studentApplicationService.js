@@ -1,7 +1,10 @@
 import { withTransaction } from '../repositories/transaction.js';
 import { AppError } from '../utils/AppError.js';
 import { mustExist } from './catalogService.js';
-import { evaluateEligibility } from './eligibilityService.js';
+import {
+  evaluateEligibility,
+  missingApplicationProfile,
+} from './eligibilityService.js';
 const duplicate = () =>
   new AppError(
     'DUPLICATE_APPLICATION',
@@ -37,17 +40,7 @@ export function studentApplicationService({
           const profile = mustExist(
             await students.lockApplicationProfile(tx, user.studentId),
           );
-          const missing = [
-            'fullName',
-            'enrollmentNumber',
-            'branchId',
-            'graduationYear',
-          ].filter(
-            (key) =>
-              !profile[key] ||
-              (typeof profile[key] === 'string' && !profile[key].trim()),
-          );
-          if (!profile.academic) missing.push('academicRecords');
+          const missing = missingApplicationProfile(profile);
           if (missing.length)
             throw new AppError(
               'PROFILE_INCOMPLETE',

@@ -23,7 +23,12 @@ export default function ListView({
         query={query}
         empty={query.isSuccess && !query.data?.data?.length}
       >
-        <div className="table-scroll">
+        <div
+          className="table-scroll"
+          role="region"
+          aria-label={`${columns[0]?.label || 'Record'} results`}
+          tabIndex={0}
+        >
           <table>
             <thead>
               <tr>

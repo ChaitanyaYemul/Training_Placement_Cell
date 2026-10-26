@@ -70,7 +70,7 @@ Students never receive draft/archived drive details or inactive companies; absen
 
 During a Mongo outage, drive detail returns the MySQL data, `recruitment:null` and `warnings:[{code:"RECRUITMENT_DATA_UNAVAILABLE"}]`. Recruitment writes return 503 and leave the SQL drive unchanged. Draft deletion commits SQL first; failed Mongo cleanup returns `RECRUITMENT_CLEANUP_PENDING` and logs the drive id for later reconciliation. Do not blindly repeat the DELETE after a lost response; refetch the resource. General reconciliation remains unimplemented.
 
-Phase 4 adds frontend authentication and workspaces using the implemented endpoints. Phase 5 adds submission, withdrawal and application/history detail as documented below. Report endpoints and reconciliation remain deferred.
+Phase 4 adds frontend authentication and workspaces using the implemented endpoints. Phase 5 adds submission, withdrawal and application/history detail as documented below. Reporting endpoints and operator reconciliation are documented in the final-phase sections below.
 
 ## Phase 4 client integration
 
@@ -107,3 +107,7 @@ Withdrawal accepts only own applied/shortlisted applications and stores its hist
 | 503 SERVICE_UNAVAILABLE       | Required MySQL unavailable                                                                                 |
 
 These operations have no MongoDB dependency. The actual-outage test verifies submission, detail and withdrawal with Mongo stopped. Student UI applies no optimistic business update or automatic write retry; success invalidates application lists/details, drives and dashboard queries. This phase adds no one-student-one-offer restriction.
+
+## Administrator reports
+
+`GET /api/admin/reports/{overview,drives,companies,branches,statuses,participation}` requires an admin session. All accept optional `from`, `to` (inclusive UTC registration-deadline dates), positive `driveId`, `companyId`, `branchId`, `page` (default1), `limit` (default10,max100), `sort=id|-id`, and `format=json|csv`. Unknown input or reversed dates:400; anonymous:401; student:403; MySQL unavailable:503; CSV above10,000rows:413 REPORT_EXPORT_TOO_LARGE. Tables return data arrays with standard meta; overview returns aggregate counts, placementRate and recruitment roundTypes/requiredDocuments. CSV returns text/csv attachment, with formula-safe quoted cells. Mongo outage preserves overview SQL data with recruitment:null and REPORT_RECRUITMENT_UNAVAILABLE. See [report definitions](architecture/reporting.md) for denominators, projections and cohort semantics.

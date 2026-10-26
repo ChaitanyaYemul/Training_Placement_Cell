@@ -7,10 +7,10 @@ import {
 import { applyMongoSchemas } from '../../backend/src/repositories/mongoSchemaRepository.js';
 import { hashPassword } from '../../backend/src/services/passwordService.js';
 export default async function globalSetup() {
-  const { pool } = await freshMysql();
+  const { pool } = await freshMysql({ useConfiguredName: true });
   let mongo;
   try {
-    mongo = await freshMongo();
+    mongo = await freshMongo({ useConfiguredName: true });
     await applyMongoSchemas(mongo);
     await mysqlFixtures(pool);
     // Fictional test-only accounts; never run against development/production databases.

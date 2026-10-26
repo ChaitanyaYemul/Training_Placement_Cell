@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Use Node 24.x LTS, npm 11.x, MySQL 8.4 LTS (minimum 8.0.16; MariaDB is not supported), and MongoDB 8.0 or a supported newer release. Run `npm ci` at the repository root. The lockfile remains unchanged in Phase 4.
+Use Node 24.x LTS, npm 11.x, MySQL 8.4 LTS (minimum 8.0.16; MariaDB is not supported), and MongoDB 8.0 or a supported newer release. Run `npm ci` at the repository root.
 
 ## Development settings
 
@@ -48,16 +48,38 @@ These live services may need restarting after cloud snapshots. To stop only thos
 
 ```sh
 npm run check
+npm run check:syntax
 npm run test:backend -w backend
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 ```
 
-`check` runs lint, formatting, ordinary frontend/backend tests and the frontend build. `test:backend` runs ordinary, database, authentication and business suites sequentially. The database suites **drop/recreate only their configured disposable `_test` schemas**. They must not run concurrently with each other or E2E. For focused checks, use `test:db`, `test:auth`, or `test:business` in the backend workspace.
+`check` runs lint, JavaScript syntax validation, formatting, ordinary frontend/backend tests and the frontend build. This approved JavaScript project has no TypeScript source or TypeScript type-check command; JSX is parsed by ESLint and compiled by Vite. `test:backend` runs ordinary, database, authentication and business suites sequentially. The database suites validate dedicated `_test` bindings, then allocate uniquely named `_test` schemas without dropping existing databases. These disposable schemas are retained after each run; operators may clean them separately after inspecting them. They must not run concurrently with each other or E2E. For focused checks, use `test:db`, `test:auth`, or `test:business` in the backend workspace.
 
-E2E explicitly loads backend/.env.test, resets those disposable schemas, installs validators and creates fictional test-only accounts. Its two preset accounts are admin-test@example.edu and student-test@example.edu, with the test-only password defined in tests/e2e/helpers.js. They are not created in development. Playwright starts/stops the real backend and Vite, with ports 3000/5173 free. The auth attempt limit is configured to its supported maximum for the suite; CSRF, Origin checks, roles, persistent sessions and the global rate limiter remain enabled. The suite waits for rate-limit capacity when necessary. Run it with a verified Playwright Chromium installation or the executable-path override above.
+E2E explicitly loads backend/.env.test, allocates a unique disposable schema pair, installs validators and creates fictional test-only accounts. Its two preset accounts are admin-test@example.edu and student-test@example.edu, with the test-only password defined in tests/e2e/helpers.js. They are not created in development. Playwright starts/stops the real backend and Vite, with ports 3000/5173 free. The auth attempt limit is configured to its supported maximum for the suite; CSRF, Origin checks, roles, persistent sessions and the global rate limiter remain enabled. The suite waits for rate-limit capacity when necessary. Run it with a verified Playwright Chromium installation or the executable-path override above.
 
 Optional `npm run test:outage -w backend` actually stops/restarts only the helper-created local Mongo test container, then verifies degraded SQL-backed reads, 503 writes and recovery. Run it separately. It does not support external test Mongo instances.
 
 If npm's cache is unwritable, use `NPM_CONFIG_CACHE=/tmp/placement-npm-cache`; no checks are disabled. The known session-store upstream mysql2 exact-pin mismatch can make `npm ls mysql2` flag the documented patched override even though installation, audit and real session tests succeed.
 
-Production deployment, reports and general reconciliation remain deferred. `reconcile` is still an explicit reservation. Database schema regeneration is available through `npm run db:schema -w backend` only when migrations intentionally change.
+See [DEMO.md](../DEMO.md) for isolated demo provisioning, [report definitions](architecture/reporting.md), [reconciliation](architecture/reconciliation.md), and [deployment preparation](deployment.md). No deployment is performed by setup commands. Database schema regeneration is available through `npm run db:schema -w backend` only when migrations intentionally change.
+
+## Environment inventory
+
+| Variable                                     | Purpose / default                                                         |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| NODE_ENV                                     | development, test or production                                           |
+| PORT                                         | API listen port, 3000                                                     |
+| CLIENT_ORIGIN                                | Exact comma-separated browser origins; localhost:5173 in development      |
+| MYSQL_HOST / MYSQL_PORT                      | MySQL address/port; port defaults to 3306                                 |
+| MYSQL_USER / MYSQL_PASSWORD / MYSQL_DATABASE | Scoped runtime database credentials and explicit schema                   |
+| MONGODB_URI                                  | Mongo connection URI with explicit database; encode credentials           |
+| SESSION_SECRET / CSRF_SECRET                 | Independently generated private secrets, 32+ characters                   |
+| SESSION_MAX_AGE_MS                           | Rolling idle session lifetime; 7200000                                    |
+| TRUST_PROXY_HOPS                             | Trusted proxy count; 0 locally, configured for actual production topology |
+| AUTH_RATE_LIMIT                              | Combined login/register attempts per 15 minutes/IP; 10                    |
+| ADMIN_EMAIL / ADMIN_NAME / ADMIN_PASSWORD    | Operator-only inputs for admin:create; clear after invocation             |
+| VITE_API_BASE_URL                            | Public API path, /api                                                     |
+| VITE_INSTITUTION_TIMEZONE                    | Public display timezone, Asia/Kolkata                                     |
+| API_PROXY_TARGET                             | Development-only Vite upstream, http://127.0.0.1:3000                     |
+
+No application secret belongs in frontend variables. Demo command options and generated credential-file location are documented in DEMO.md. Production host paths and Nginx TLS certificate paths are operator configuration, not bundled secrets.

@@ -124,12 +124,14 @@ export default function RecruitmentForm({ id, initial, reload }) {
       <Field
         label="Required documents (one per line)"
         as="textarea"
+        disabled={mutation.isPending}
         value={documents}
         onChange={(e) => setDocuments(e.target.value)}
       />
       <Field
         label="Additional requirements (JSON object)"
         as="textarea"
+        disabled={mutation.isPending}
         value={additional}
         onChange={(e) => setAdditional(e.target.value)}
       />

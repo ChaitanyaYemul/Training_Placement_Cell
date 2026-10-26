@@ -244,6 +244,7 @@ describe('Independent authentication commit: real MySQL sessions', () => {
       {
         cwd: new URL('../../backend/', import.meta.url),
         env: {
+          MYSQL_DATABASE: pool.pool.config.connectionConfig.database,
           ADMIN_EMAIL: input.email,
           ADMIN_PASSWORD: input.password,
           ADMIN_NAME: 'CLI Test Administrator',

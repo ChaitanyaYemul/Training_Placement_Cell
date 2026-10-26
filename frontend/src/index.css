@@ -6,6 +6,7 @@
     background: #f8f8f5;
     color: #1c2924;
     font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    overflow-wrap: anywhere;
   }
   button,
   a {
@@ -38,7 +39,7 @@
   .field input:not([type='checkbox']),
   .field select,
   .field textarea {
-    @apply min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 font-normal text-stone-900;
+    @apply min-h-11 min-w-0 w-full max-w-full rounded-lg border border-stone-300 bg-white px-3 py-2 font-normal text-stone-900;
   }
   .field textarea {
     @apply min-h-28;

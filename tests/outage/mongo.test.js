@@ -107,6 +107,11 @@ it('degrades a real MongoDB outage without losing relational drive data', async 
     expect(result.data.id).toBe(1);
     expect(result.data.recruitment).toBeNull();
     expect(result.warnings[0].code).toBe('RECRUITMENT_DATA_UNAVAILABLE');
+    const report = await agent.get('/api/admin/reports/overview');
+    expect(report.status).toBe(200);
+    expect(report.body.data.drives).toBe(1);
+    expect(report.body.data.recruitment).toBeNull();
+    expect(report.body.warnings[0].code).toBe('REPORT_RECRUITMENT_UNAVAILABLE');
     // Application submission, history and withdrawal depend only on MySQL, including during a real Mongo outage.
     const applied = await studentAgent
       .post('/api/placement-drives/1/applications')
@@ -171,4 +176,9 @@ it('degrades a real MongoDB outage without losing relational drive data', async 
     expect(ready).toBe(true);
   }
   expect((await service.get(1, actor)).data.recruitment.rounds).toHaveLength(1);
+  const recovered = await agent.get('/api/admin/reports/overview');
+  expect(recovered.status).toBe(200);
+  expect(recovered.body.data.recruitment.roundTypes).toEqual([
+    { roundType: 'assessment', count: 1 },
+  ]);
 }, 45000);

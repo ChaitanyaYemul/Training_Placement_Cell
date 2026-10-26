@@ -1,0 +1,9 @@
+# Administrator reporting
+
+Six read-only, admin-only endpoints under `/api/admin/reports`: overview, drives, companies, branches, statuses and participation. Each accepts `from`, `to` (inclusive UTC registration-deadline dates), `driveId`, `companyId`, `branchId`, `page`, `limit`, `sort=id|-id` and `format=json|csv`. Unknown keys and malformed ranges return 400; anonymous requests return 401 and students 403. JSON tables return pagination metadata. CSV exports all filtered rows, with an explicit 413 above 10,000 rows; cells are quoted and spreadsheet formulas neutralized.
+
+Overview combines SQL totals and Mongo round-type/document aggregations. Mongo failure preserves SQL totals with recruitment:null and REPORT_RECRUITMENT_UNAVAILABLE. MySQL failure returns 503. SQL reads share a transaction snapshot; the Mongo aggregation is a separate observation, not a cross-database transaction.
+
+Selections count selected applications; placedStudents counts distinct students. Students and placement-rate denominators use the whole student population, or the chosen branch. Drive/company/date filters narrow the drive cohort. Branch filtering also narrows applications to current student branch. Zero-application drives remain visible. Participation reports current complete, active students meeting the shared backend eligibility evaluator, plus distinct participants and eligible participants; its rate is eligibleParticipants/eligibleStudents. Current eligibility does not rewrite historical results. Branches represent departments in this single-college schema.
+
+The dashboard uses URL-backed filters, summary cards, paginated tables, an accessible count chart, explicit query/error/empty states, polling and mutation invalidation. Exports use the authenticated Axios client. No schema or database ownership changes are required.

@@ -150,3 +150,39 @@ The initial cross-session browser assertion expected an immediate push update. T
 API/security/DBMS/setup documentation and the Phase 5 architecture/plan describe the new endpoints, lock order, error codes, transaction boundaries, query invalidation and user-visible limitations. The existing UNIQUE/FK/index/history guards are reused. There is no MySQL/Mongo cross-database transaction or Mongo dependency for applications.
 
 Remaining work is reports, general reconciliation, password reset/change, notifications/file storage and production deployment. Local verification does not claim production readiness. All environment files and generated artifacts remain ignored; no credentials or real student data were committed.
+
+## Final-phase baseline — 25 October 2026
+
+Before new features, `git status --short --branch`, `git branch -vv`, and `git log -n 10 --oneline` confirmed a clean `feat/student-applications` at `37db994`. The existing branch was pushed to origin without force, then `phase-6-final` was created. Fetched origin/main was `72fcbc3`, the Phase 3 merge; the final branch includes all Phase 4–5 commits.
+
+Executed clean `NPM_CONFIG_CACHE=/tmp/placement-npm-cache npm ci`, `npm run check`, `npm run test:db:services -w backend`, `npm run test:backend -w backend`, `npm run test:outage -w backend`, and `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e`. All passed: 26 frontend + 104 backend (19 ordinary, 33 database, 14 authentication, 38 business) + 1 outage + 10 browser = **141 distinct tests**. Repeated ordinary tests are counted once. Baseline logs: `/tmp/final-baseline-*.log` in this execution environment.
+
+A fresh isolated `placement_final_20261025_demo` schema was created without dropping existing databases. Documented migration, Mongo setup, reference seed, and connectivity script entrypoints succeeded against ignored `backend/.env.demo`. All 18 migrations applied and a second migration run applied zero. Database versions were MySQL 8.4.11 and MongoDB 8.0.34, UTC MySQL session timezone. No production data was accessed.
+
+The audit found GHSA-27r3-jxmh-p828 in body-parser 2.3.0. Updating the compatible transitive package to 2.4.0 changed only its lockfile entry; `npm audit` then reported zero vulnerabilities. No approved stack major changed.
+
+## Final verification — 26 October 2026
+
+Implemented reports (six admin-only JSON/CSV endpoints and dashboard), operator reconciliation, UI/accessibility polish, isolated demo provisioning and deployment preparation. No domain schema migration, ORM or stack change was needed. AGENTS.md conventions remain authoritative; its original status table is historical and the executed evidence here records completion.
+
+Final executed results:
+
+| Check                                   | Result                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| Clean npm ci from lockfile              | Passed                                                                    |
+| npm run check                           | Passed lint, JS syntax, formatting, ordinary tests and production build   |
+| Frontend component suites               | 37 passed                                                                 |
+| npm run test:backend -w backend         | 136 passed: 25 ordinary + 33 DB + 14 auth + 64 business                   |
+| npm run test:outage -w backend          | 1 passed, actual Mongo stop/restart including report degradation/recovery |
+| Chromium npm run test:e2e               | 19 passed in 9.4 minutes                                                  |
+| npm audit                               | Zero vulnerabilities                                                      |
+| git diff --check                        | Passed                                                                    |
+| Demo provisioning twice                 | First created accounts; second preserved accounts/passwords               |
+| Real demo HTTP login/session/read smoke | Passed for admin and student on port 3001                                 |
+| Read-only demo reconciliation           | Passed; no mismatches, no writes                                          |
+
+**193 distinct tests passed**, counting repeated ordinary suites once. Browser coverage includes every student/admin screen at 375/768/1280px, labels, keyboard focus, no console/API errors during route audits, viewport overflow, report filters and six real CSV downloads, student report denial, registration/profile/apply/withdraw/history, admin publish/review and announcement flows. The limiter remains enabled and accounts for deliberate waits.
+
+Fixes discovered during verification: qualified the status report sort column to remove SQL ambiguity; updated auth CLI test to target its newly allocated test schema; initialized E2E schemas before starting the API. Final passing runs include these fixes. Dedicated test helpers now allocate new uniquely named `_test` schemas rather than dropping existing databases; retained fixtures can be inspected and cleaned separately by an operator. The ordinary suite needs local socket/network permission in this managed environment; its initial sandbox EPERM run was rerun successfully with that permission.
+
+JavaScript syntax checking is explicit; no TypeScript source/configuration was introduced. Production Nginx/TLS/systemd installation, actual public hosting and production credentials were not exercised or deployed. Nginx is not installed in this execution environment, so its supplied configuration requires the documented operator `nginx -t` check on the target host. No production data was touched. No claim of universal zero defects is made beyond the checks actually run.

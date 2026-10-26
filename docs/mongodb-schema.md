@@ -53,7 +53,7 @@ Run `npm run mongo:setup -w backend` explicitly with configured `.env`. It creat
 
 Drive/user/branch ids reference independent MySQL lifecycles and are not embedded master records. MongoDB cannot enforce a foreign key into MySQL. The sample-seed service verifies its drive and active-admin references in MySQL before writing Mongo documents. No other application write service exists yet. Future services must validate references, apply optimistic concurrency where relevant, and handle orphan/missing documents per AGENTS.md §7.
 
-No ACID transaction spans databases. Sample document upserts are repeatable and preserve existing documents; a partial two-document seed can be rerun safely. General cross-database orchestration, read degradation, HTTP error mapping and reconciliation are deferred to later backend phases.
+No ACID transaction spans databases. Sample document upserts are repeatable and preserve existing documents; a partial two-document seed can be rerun safely. Drive services implement cross-database ordering, read degradation and HTTP error mapping. The operator reconciliation command reports orphans and published missing/empty recruitment data; see architecture/reconciliation.md.
 
 ## Phase 3 API adapters
 

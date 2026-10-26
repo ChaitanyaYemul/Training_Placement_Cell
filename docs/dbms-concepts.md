@@ -1,6 +1,6 @@
 # DBMS concepts — implemented foundation and executed demonstrations
 
-These entries describe actual Phase 2 schema/code and database tests. Expected results below use dedicated test fixtures, not a claim that reference seeds create student/admin accounts or drive records. MySQL 8.4.11 and MongoDB 8.0.34 were used. Production services, eligibility enforcement and report APIs remain later work.
+These entries describe the implemented schema, current services and executed database demonstrations. Expected results below use dedicated test fixtures, not a claim that reference seeds create student/admin accounts or drive records. MySQL 8.4.11 and MongoDB 8.0.34 were used. Later sections describe eligibility enforcement, transactional applications and reporting APIs. Production deployment is not claimed.
 
 ## Relational modeling and 3NF
 
@@ -294,3 +294,12 @@ ORDER BY h.changed_at, h.id;
 
 - **Expected result:** The owner sees ordered history and archived-drive summary; another student receives 404. History is bounded by terminal transitions, so no separate paginated history collection is necessary. Application/drive names remain relational joins, not duplicated Mongo documents or snapshots.
 - **Project use case:** Application detail/history remains SQL-only and works during an actual Mongo outage, as do submission and withdrawal. The browser invalidates cached application/drive/dashboard views only after server success.
+
+## Filtered reporting aggregates
+
+- **Definition:** GROUP BY and conditional/distinct counts summarize relational rows without copying master data.
+- **Why required:** Compare drive, company and branch participation/results without counting multiple selections as multiple placed students.
+- **Where implemented:** backend/src/repositories/reportQueries.js, reportRepository.js; services/reportService.js; tests/business/reports.test.js.
+- **Example query:** `SELECT status, COUNT(id) FROM student_applications GROUP BY status;`
+- **Expected result:** One count per populated status; the API additionally includes zero-count statuses and filtered cohorts. Distinct placed students remain separate from selected applications.
+- **Project use case:** Admin summary cards, result tables and CSV. Mongo reportRecruitmentRepository applies $match and $facet with $unwind/$group pipelines for round types and required documents. SQL and Mongo observations are combined in the service without claiming a shared snapshot.
