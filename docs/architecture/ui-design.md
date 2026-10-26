@@ -13,3 +13,21 @@ Frontend API functions, query hooks, authentication/session handling, routes, bu
 The public-navigation E2E assertion follows the new landing heading and checks the existing health endpoint directly rather than requiring an operational API status panel in the product page. Existing authentication, mutation, ownership, and security assertions are retained.
 
 Executed checks and limitations are recorded in [UI verification](ui-verification.md).
+
+## Sky-blue cursor trail
+
+The House of Dreamers cursor reference supplied through Awwwards inspired a soft, translucent sky-blue smoke trail and at most three small butterflies. The portal uses its own Canvas 2D particle rendering and original vector wing shapes, with no borrowed source/assets or new dependency. This is a lightweight visual approximation rather than a full WebGL fluid simulation.
+
+`CursorTrail.jsx` mounts one decorative, aria-hidden canvas in the shared layout. Its renderer and artwork live in `utils/cursorTrail.js` and `utils/cursorArtwork.js`. The native cursor remains visible and the canvas has `pointer-events: none`. Input/select/textarea fields, editable content and dialogs clear the effect. Touch/coarse-pointer devices and reduced-motion users do not initialize the renderer; preference changes disable it immediately.
+
+The renderer caps smoke at 80 puffs, butterflies at three, backing-store pixel ratio at 1.5, and drawing at no more than 45 frames per second. It schedules frames only while decoration remains visible, clears on blur/hidden pages, and removes listeners and pending frames on unmount. Particle data stays outside React state. No API requests or database changes are involved.
+
+## Cursor switching
+
+`CursorEffects.jsx` adds an Alt+R shortcut and an equivalent footer button. Sky trail is the default. Scuba Cat mode loads the exact user-supplied stylesheet from `cdn.cursors-4u.net`; once ready it unmounts the smoke/butterfly scene. Switching back removes the stylesheet and its HTML marker and restores the trail. The choice survives client-side navigation and resets on page refresh. Key repeats, composition, AltGraph and unrelated modifier combinations do not toggle the mode.
+
+The Scuba Cat artwork is provided by maisita through [Cursors-4U](https://www.cursors-4u.com/cursor/scuba-cat-normal-select), whose page labels it Personal Use Only. The original stylesheet remains hosted by its provider rather than being redistributed in this repository. The embed is requested without a referrer and only after selecting it. Its animated cursor frames are embedded WebP images inside the stylesheet. Text-editing controls retain a text cursor; reduced-motion mode pauses the cursor animation. If the stylesheet cannot load, the app keeps Sky trail and announces the failure. The supplied Nginx CSP permits this specific stylesheet CDN; no external script permission was added.
+
+## Notification timing
+
+Notifications remain visible for three seconds, then fade out over 200 milliseconds. Each new notification, including a repeated message, restarts the timer. Manual dismissal remains available. Timers are cleared on replacement and unmount; reduced-motion users receive immediate dismissal without animation.

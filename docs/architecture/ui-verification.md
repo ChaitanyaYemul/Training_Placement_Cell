@@ -17,3 +17,23 @@ Executed checks:
 The initial browser audit stopped during a backend development watcher restart caused by dependency installation. After the watcher recovered, the complete audit passed. The backend source and configuration were not modified. Browser review uses existing local fictional accounts and read-only screens; only session login/logout requests mutate session state. No destructive tests were run against development data. The full historical backend/E2E suites were not rerun for this presentation-only change.
 
 Screenshots and machine-readable test results remain ignored under `.npm-cache/ui-review/` and `.npm-cache/ui-component-results.json`. These checks were performed locally before committing and publishing the redesign. No deployment was performed.
+
+## Cursor effect follow-up
+
+The Awwwards reference page and its embedded motion preview were inspected before implementing the sky-blue canvas trail. `npm run lint -w frontend`, formatting checks on the affected files, `npm run test -w frontend -- src/components/CursorTrail.test.jsx` (four tests), and `npm run build` passed. The previously documented bundle-size advisory remains; no dependency was added.
+
+`node test-results/cursorReview.mjs` verified actual rendered canvas pixels while moving the mouse, complete fade-out after idle, immediate clearing and hiding when reduced motion is enabled, disabled decoration on a touch device, usable form input/navigation, and no browser page errors. The desktop screenshot was inspected to confirm light sky-blue smoke and three small butterflies. Focused component tests cover disabled-device preferences, live reduced-motion changes, unmount cleanup, and noninterference with form fields. The historical full test suites were not rerun for this isolated visual addition.
+
+## Scuba Cat toggle follow-up
+
+`npm run test -w frontend -- src/components/CursorEffects.test.jsx src/components/CursorTrail.test.jsx` passed eight focused tests covering toggling, load readiness, modifier/repeat filtering, fallback, listener/stylesheet cleanup, and the original trail safeguards. Frontend lint and build passed. The real browser check in `test-results/cursorToggleReview.mjs` verified that the supplied CDN stylesheet loads, computed cursor frames change, Alt+R switches in both directions, the choice survives navigation, text fields retain `cursor: text`, and reduced motion pauses animation. A blocked stylesheet request restores the sky trail. No browser page errors were observed. An initial browser assertion needed to target the cursor's status message separately from the existing toast live region.
+
+The deployment CSP change only adds the cursor stylesheet CDN to style sources. No deployment or Nginx runtime validation was performed. No backend source, authentication rules, database data or dependency manifest changed for this toggle.
+
+## Notification timing and final UI checks
+
+The notification provider now starts its fade-out after three seconds. `node test-results/verifyToastTimeout.mjs` passed browser checks for automatic removal, timer reset when the same message appears again, and manual dismissal. Frontend lint and build passed.
+
+Before publishing these follow-up changes, `npm run check` stopped at lint because it scanned downloaded Chromium scripts under the ignored local `.npm-cache/` directory. Running `npx eslint . --ignore-pattern '.npm-cache/**' --max-warnings 0` passed. `npm run check:syntax`, Prettier checks on the changed frontend/documentation files, and `npm run build` passed. The bundle-size advisory remains.
+
+`npm test` reported 44 passing frontend tests and the previously documented failing logout/cache-clearing test in `authentication.test.jsx`. Backend tests could not start because Vite could not read the local ignored `backend/.env` file (EPERM). These results do not establish a fully passing project suite. No destructive database tests or deployment commands were run for this UI publication.

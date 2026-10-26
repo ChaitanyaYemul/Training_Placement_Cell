@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { Button, FormErrors } from '../components/ui.jsx';
 import Brand from '../components/Brand.jsx';
+import CursorEffects from '../components/CursorEffects.jsx';
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
@@ -64,6 +65,7 @@ export default function AppLayout() {
         <p>
           VIT Pune <span aria-hidden="true">·</span> Training & Placement Cell
         </p>
+        <CursorEffects />
         <p>Made for your next chapter.</p>
       </footer>
     </div>
