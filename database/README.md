@@ -10,4 +10,4 @@
 
 MySQL owns relational master data, applications/history and future sessions. MongoDB owns only recruitment-process and announcement documents. See `docs/er-diagram.md`, `docs/mongodb-schema.md`, and `docs/architecture/database-ownership.md`.
 
-Empty legacy `schemas/`/`migrations/` placeholder folders are reserved; no alternate MySQL schema authority or Mongo migration runner is implied. Schema changes require new SQL migrations and matching reference/docs updates; Mongo shape changes require coordinated model/validator/documentation updates.
+Only implemented database artifact folders are tracked; empty legacy placeholders have been removed. MySQL migrations remain the schema authority. Schema changes require new SQL migrations and matching reference/docs updates; Mongo shape changes require coordinated model/validator/documentation updates.

@@ -22,7 +22,7 @@ The CLI supports the explicit maintenance action specified by AGENTS.md §7.5:
 npm run reconcile -w backend -- --fix --audit-file /private/operator/path/reconciliation.jsonl
 ```
 
-Choose an existing private directory outside the repository for the audit file. Both input and output must be interactive terminals. After printing the full scan, the command requires the exact phrase `DELETE N ORPHAN RECRUITMENT DOCUMENTS`, where N is the reported count. A mismatch leaves all data intact. There is no unattended confirmation flag. The legacy `backend/scripts/notImplemented.js` path now forwards to this implemented CLI; the npm script uses `reconcile.js` directly.
+Choose an existing private directory outside the repository for the audit file. Both input and output must be interactive terminals. After printing the full scan, the command requires the exact phrase `DELETE N ORPHAN RECRUITMENT DOCUMENTS`, where N is the reported count. A mismatch leaves all data intact. There is no unattended confirmation flag. Run reconciliation with `npm run reconcile -w backend`; the npm script invokes `backend/scripts/reconcile.js` directly.
 
 Each candidate is handled separately:
 
