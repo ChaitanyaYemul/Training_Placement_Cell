@@ -12,6 +12,7 @@ export default [
       '**/node_modules/**',
       'playwright-report/**',
       'test-results/**',
+      '.npm-cache/**',
     ],
   },
   js.configs.recommended,

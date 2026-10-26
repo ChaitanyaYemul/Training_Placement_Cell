@@ -41,9 +41,22 @@ describe('Reconciliation operator safeguards', () => {
     const path = join(directory, 'audit.jsonl');
     const audit = await openReconciliationAudit(path);
     await audit.close();
-    await chmod(path, 0o644);
+    if (process.platform === 'win32') {
+      const shared = spawnSync('icacls.exe', [path, '/grant', '*S-1-1-0:(R)'], {
+        encoding: 'utf8',
+        windowsHide: true,
+      });
+      expect(shared.status).toBe(0);
+    } else {
+      await chmod(path, 0o644);
+    }
     await expect(openReconciliationAudit(path)).rejects.toThrow('private');
-    await symlink(path, join(directory, 'link'));
+    // Directory junctions exercise Windows reparse-point rejection without admin privileges.
+    await symlink(
+      process.platform === 'win32' ? directory : path,
+      join(directory, 'link'),
+      process.platform === 'win32' ? 'junction' : 'file',
+    );
     await expect(
       openReconciliationAudit(join(directory, 'link')),
     ).rejects.toThrow();

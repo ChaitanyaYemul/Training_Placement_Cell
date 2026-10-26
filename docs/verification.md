@@ -186,3 +186,19 @@ Final executed results:
 Fixes discovered during verification: qualified the status report sort column to remove SQL ambiguity; updated auth CLI test to target its newly allocated test schema; initialized E2E schemas before starting the API. Final passing runs include these fixes. Dedicated test helpers now allocate new uniquely named `_test` schemas rather than dropping existing databases; retained fixtures can be inspected and cleaned separately by an operator. The ordinary suite needs local socket/network permission in this managed environment; its initial sandbox EPERM run was rerun successfully with that permission.
 
 JavaScript syntax checking is explicit; no TypeScript source/configuration was introduced. Production Nginx/TLS/systemd installation, actual public hosting and production credentials were not exercised or deployed. Nginx is not installed in this execution environment, so its supplied configuration requires the documented operator `nginx -t` check on the target host. No production data was touched. No claim of universal zero defects is made beyond the checks actually run.
+
+## Windows local verification repair — 26 October 2026
+
+The frontend logout fixture now models server-side session destruction: after a successful logout, `/auth/me` returns 401. Redirect/cache-clearing assertions are unchanged; production authentication behavior did not need modification. Backend Vitest configurations disable automatic development `.env` loading and retain explicit `.env.test` loading for database suites. NTFS ownership/access was repaired locally for `.env`, `.env.runtime` and `.env.test` without exposing or committing their contents.
+
+Reconciliation audit privacy now uses protected NTFS ACLs on Windows, retaining private-file and link rejection rather than treating synthetic POSIX mode bits as access controls. Tests exercise actual ACL sharing and junction rejection. Check tools ignore downloaded `.npm-cache` files; formatting accepts checkout-native line endings. Schema snapshot generation/comparison canonicalizes CRLF to LF without editing migrations, SQL semantics or migration checksums.
+
+Executed locally with Node 24.22.1, MySQL 8.0.45 and MongoDB 9.0.2:
+
+| Check                                   | Result                                                                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `npm run check`                         | Passed lint, syntax, formatting, 45 frontend tests, 25 ordinary backend tests and Vite build                    |
+| `npm run test:backend -w backend`       | Passed 136 tests: 25 ordinary, 33 database, 14 authentication, 64 business                                      |
+| `node test-results/verifyLogoutFix.mjs` | Passed real Chromium admin/student login, logout, server-side session destruction and protected-route redirects |
+
+Database verification allocated only unique disposable `placement_*_test` schemas using explicitly guarded local test bindings. The local MySQL schema-owner account is used only in the ignored test configuration because binary logging requires its privileges when creating history-protection triggers. No global MySQL settings were weakened. Disposable test schemas are retained as documented. No development-data cleanup was performed during verification. The native MongoDB service is shared with development, so the Docker-only outage test was not run; the full historical E2E suite was not rerun. The Vite bundle-size advisory remains. No deployment was performed.

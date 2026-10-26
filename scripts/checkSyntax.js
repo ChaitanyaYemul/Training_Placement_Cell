@@ -11,6 +11,7 @@ async function check(directory) {
         'dist',
         'test-results',
         'playwright-report',
+        '.npm-cache',
       ].includes(entry.name)
     )
       continue;

@@ -133,15 +133,18 @@ it('shows service failure instead of claiming the visitor is logged out', async 
 });
 it('redirects students away from admin routes and clears cached private data at logout', async () => {
   resourceHandlers();
+  let authenticated = true;
   server.use(
     http.get('*/api/auth/me', () =>
-      reply({ id: 2, role: 'student', email: 'fake@example.edu' }),
+      authenticated
+        ? reply({ id: 2, role: 'student', email: 'fake@example.edu' })
+        : anonymous(),
     ),
     http.get('*/api/auth/csrf-token', () => reply({ csrfToken: 'csrf' })),
-    http.post(
-      '*/api/auth/logout',
-      () => new HttpResponse(null, { status: 204 }),
-    ),
+    http.post('*/api/auth/logout', () => {
+      authenticated = false;
+      return new HttpResponse(null, { status: 204 });
+    }),
   );
   const { client, router } = mount('/admin/companies');
   expect(
