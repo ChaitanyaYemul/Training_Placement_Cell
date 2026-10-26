@@ -8,14 +8,12 @@ export default function FilterBar({
   activeFilter = false,
 }) {
   return (
-    <form
-      className="mb-6 flex flex-wrap items-end gap-3"
-      onSubmit={(e) => e.preventDefault()}
-    >
+    <form className="filter-bar" onSubmit={(e) => e.preventDefault()}>
       {search && (
         <Field
           label="Search"
           type="search"
+          placeholder="Search records…"
           maxLength={100}
           value={filters.params.q || ''}
           onChange={(e) => filters.update('q', e.target.value)}

@@ -11,18 +11,18 @@ export default function AnnouncementFeed({ query, filters }) {
       >
         <div className="space-y-5">
           {query.data?.data?.map((r) => (
-            <article key={r.id} className="panel">
+            <article key={r.id} className="panel announcement-card">
               <div className="mb-3 flex flex-wrap gap-2">
                 <StatusBadge>{r.priority}</StatusBadge>
                 {r.isPinned && <StatusBadge>Pinned</StatusBadge>}
               </div>
               <h2 className="text-xl font-semibold">{r.title}</h2>
-              <p className="my-3 text-sm text-stone-500">
+              <p className="my-3 text-sm text-slate-500">
                 {formatDate(r.publishedAt)}
               </p>
               <p className="whitespace-pre-wrap break-words">{r.body}</p>
               {r.relatedDriveId && (
-                <p className="mt-3 text-sm text-stone-600">
+                <p className="mt-3 text-sm text-slate-600">
                   Related placement drive #{r.relatedDriveId}. Current drives
                   are available in Placement drives.
                 </p>

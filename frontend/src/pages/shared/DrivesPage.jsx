@@ -39,9 +39,14 @@ export default function DrivesPage() {
           {
             label: 'Drive',
             render: (r) => (
-              <Link className="text-link" to={`/${user.role}/drives/${r.id}`}>
-                {r.title}
-              </Link>
+              <div>
+                <Link className="text-link" to={`/${user.role}/drives/${r.id}`}>
+                  {r.title}
+                </Link>
+                <span className="company-cell-caption">
+                  Campus recruitment · Drive #{r.id}
+                </span>
+              </div>
             ),
           },
           {

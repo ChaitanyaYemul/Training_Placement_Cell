@@ -87,7 +87,7 @@ export default function RecruitmentForm({ id, initial, reload }) {
           Fetch latest version
         </Button>
       )}
-      <p className="text-sm text-stone-500">
+      <p className="text-sm text-slate-500">
         Times use {institutionTimezone}. Rounds are numbered in their displayed
         order. Details and additional requirements accept bounded JSON objects
         for company-specific instructions.

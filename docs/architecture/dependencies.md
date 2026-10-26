@@ -46,3 +46,7 @@ Direct dependency license metadata from the installed lockfile:
 ## Phase 3 authentication dependencies
 
 Argon2 implements the approved Argon2id choice; express-session and express-mysql-session provide server-side persistent sessions. npm overrides the session store's older mysql2 transitive pin to the patched compatible 3.24.6 line, because the initial audit found vulnerable mysql2 versions. The actual session store integration suite is rerun against that override. No CSRF package is required for the small session-bound HMAC mechanism using Node crypto.
+
+## Frontend visual redesign
+
+Motion 14.6.0 (MIT) is installed only in the frontend workspace for the requested interface animations. Its declared peer dependencies support React 18/19. Lightweight `m` components and the DOM animation feature set avoid adding drag/gesture features the portal does not use. The package and its transitive dependencies are recorded in the root lockfile. `npm audit` after installation reported zero vulnerabilities. See [UI design](ui-design.md) for styling, branding and reduced-motion behavior.

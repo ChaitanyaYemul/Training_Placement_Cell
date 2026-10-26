@@ -5,6 +5,7 @@ import { useListFilters } from '../../hooks/useListFilters.js';
 import ListView from '../../components/ListView.jsx';
 import DeleteAction from '../../components/DeleteAction.jsx';
 import { PageHeader, StatusBadge } from '../../components/ui.jsx';
+import Icon from '../../components/Icon.jsx';
 export default function CompaniesPage() {
   const { user } = useAuth();
   const admin = user.role === 'admin';
@@ -32,9 +33,17 @@ export default function CompaniesPage() {
           {
             label: 'Company',
             render: (r) => (
-              <Link className="text-link" to={`${prefix}/companies/${r.id}`}>
-                {r.name}
-              </Link>
+              <div className="company-cell">
+                <span className="company-monogram" aria-hidden="true">
+                  {r.name?.slice(0, 1)}
+                </span>
+                <Link className="text-link" to={`${prefix}/companies/${r.id}`}>
+                  {r.name}
+                  <span className="company-cell-caption">
+                    View company & opportunities <Icon name="arrow" size={11} />
+                  </span>
+                </Link>
+              </div>
             ),
           },
           { label: 'Industry', render: (r) => r.industry || '—' },

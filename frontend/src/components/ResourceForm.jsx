@@ -23,7 +23,7 @@ export default function ResourceForm({
     }
   }
   return (
-    <form onSubmit={submit} className="panel space-y-5">
+    <form onSubmit={submit} className="panel resource-form space-y-5">
       <FormErrors error={localError || error} />
       {fields.map(
         ({

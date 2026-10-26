@@ -49,7 +49,7 @@ export default function DriveActions({ id, row }) {
             Update status
           </Button>
         </div>
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-slate-500">
           The server checks lifecycle transitions, recruitment rounds and
           publish prerequisites.
         </p>

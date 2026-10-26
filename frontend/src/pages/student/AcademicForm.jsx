@@ -48,7 +48,7 @@ export default function AcademicForm({ initial }) {
   }
   return (
     <form className="panel space-y-5" onSubmit={save}>
-      <p className="text-sm text-stone-500">
+      <p className="text-sm text-slate-500">
         This replaces your semester records. Removing a row here removes it when
         you save. Eligibility uses the latest semester. CGPA and SGPA use a 0–10
         scale.
@@ -58,7 +58,7 @@ export default function AcademicForm({ initial }) {
         <fieldset
           key={index}
           disabled={mutation.isPending}
-          className="min-w-0 rounded-xl border border-stone-200 p-4"
+          className="min-w-0 rounded-xl border border-slate-200 p-4"
         >
           <legend>Record {index + 1}</legend>
           <div className="grid gap-4 sm:grid-cols-2">

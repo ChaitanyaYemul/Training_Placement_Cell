@@ -15,18 +15,18 @@ export default function ReportSummary({ query }) {
   const data = query.data?.data;
   return (
     <QueryState query={query}>
-      <dl className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <dl className="report-metrics mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map(([key, label]) => (
           <div className="panel" key={key}>
-            <dt className="text-sm text-stone-600">{label}</dt>
-            <dd className="mt-2 text-3xl font-semibold text-emerald-950">
+            <dt className="text-sm text-slate-600">{label}</dt>
+            <dd className="mt-2 text-3xl font-semibold text-sky-950">
               {data?.[key] ?? '—'}
               {key === 'placementRate' ? '%' : ''}
             </dd>
           </div>
         ))}
       </dl>
-      <p className="mb-6 text-sm text-stone-600">
+      <p className="mb-6 text-sm text-slate-600">
         Placed students are counted once; selections count successful
         applications. Placement rate uses all registered students in the
         selected branch as its denominator. Participation includes withdrawn

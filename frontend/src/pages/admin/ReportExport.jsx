@@ -18,7 +18,7 @@ export default function ReportExport({
       </Button>
       {mutation.isError && <ErrorState error={mutation.error} />}
       {mutation.isSuccess && (
-        <p role="status" className="text-sm text-emerald-900">
+        <p role="status" className="text-sm text-sky-900">
           CSV download started.
         </p>
       )}

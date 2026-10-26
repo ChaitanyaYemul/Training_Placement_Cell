@@ -1,9 +1,14 @@
 export default function Card({ eyebrow, title, children }) {
   return (
-    <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+    <section className="content-card">
       {eyebrow && <p className="eyebrow mb-4">{eyebrow}</p>}
-      <h2 className="mb-3 text-xl font-semibold tracking-tight">{title}</h2>
-      <div className="leading-7 text-stone-600">{children}</div>
+      <div className="content-card-heading">
+        <h2>{title}</h2>
+        <span aria-hidden="true" className="text-slate-300">
+          ↗
+        </span>
+      </div>
+      <div className="leading-7 text-slate-600">{children}</div>
     </section>
   );
 }

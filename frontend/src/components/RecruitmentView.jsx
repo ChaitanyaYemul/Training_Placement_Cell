@@ -21,12 +21,12 @@ export default function RecruitmentView({ recruitment, warnings = [] }) {
             {recruitment.rounds.map((round) => (
               <li
                 key={round.roundNumber}
-                className="border-l-2 border-emerald-200 pl-5"
+                className="border-l-2 border-sky-200 pl-5"
               >
                 <h3 className="font-semibold">
                   {round.roundNumber}. {round.roundName}
                 </h3>
-                <p className="text-sm text-stone-500">
+                <p className="text-sm text-slate-500">
                   {round.roundType.replaceAll('_', ' ')} · {round.mode} ·{' '}
                   {formatDate(round.scheduledAt)}
                 </p>
@@ -49,7 +49,7 @@ export default function RecruitmentView({ recruitment, warnings = [] }) {
             ))}
           </ol>
           <h3 className="mt-6 font-semibold">Documents to prepare</h3>
-          <p className="mb-3 text-sm text-stone-500">
+          <p className="mb-3 text-sm text-slate-500">
             Informational checklist. Documents are not uploaded here.
           </p>
           <ul className="list-inside list-disc">

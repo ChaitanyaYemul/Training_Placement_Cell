@@ -19,11 +19,11 @@ export default function ReportChart({
                 <strong>{row[valueKey]}</strong>
               </div>
               <div
-                className="h-2 overflow-hidden rounded-full bg-stone-100"
+                className="h-2 overflow-hidden rounded-full bg-slate-100"
                 aria-hidden="true"
               >
                 <div
-                  className="h-full rounded-full bg-emerald-700"
+                  className="h-full rounded-full bg-sky-700"
                   style={{ width: `${(row[valueKey] / maximum) * 100}%` }}
                 />
               </div>
@@ -31,7 +31,7 @@ export default function ReportChart({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-slate-600">
           No recruitment data for these filters.
         </p>
       )}

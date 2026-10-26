@@ -44,7 +44,7 @@ export default function ConfirmDialog({
         e.preventDefault();
         if (!pending) onClose();
       }}
-      className="w-[min(92vw,32rem)] rounded-2xl p-6 backdrop:bg-stone-950/40"
+      className="w-[min(92vw,32rem)] rounded-2xl p-6 backdrop:bg-slate-950/40"
     >
       <h2 id="confirm-title" className="text-xl font-semibold">
         {title}

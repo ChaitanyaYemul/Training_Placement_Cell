@@ -37,7 +37,7 @@ export default function DrivePage() {
       </PageHeader>
       {row && (
         <>
-          <div className="panel space-y-3">
+          <div className="panel drive-overview space-y-3">
             <StatusBadge>{row.status}</StatusBadge>
             <p>
               <strong>Registration deadline:</strong>{' '}

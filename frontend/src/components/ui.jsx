@@ -30,7 +30,7 @@ export function Field({
       {(error || hint) && (
         <span
           id={`${id}-help`}
-          className={error ? 'text-red-800' : 'text-stone-500'}
+          className={error ? 'text-red-800' : 'text-slate-500'}
         >
           {error || hint}
         </span>
@@ -40,18 +40,31 @@ export function Field({
 }
 export function PageHeader({ title, description, children }) {
   return (
-    <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div className="page-header">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-        {description && <p className="mt-2 text-stone-600">{description}</p>}
+        <span className="page-header-label">
+          VIT PUNE / TRAINING & PLACEMENT
+        </span>
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
       </div>
       {children}
     </div>
   );
 }
 export function StatusBadge({ children }) {
+  const value = String(children).toLowerCase();
+  const tone = ['selected', 'published', 'active', 'completed'].includes(value)
+    ? 'green'
+    : ['shortlisted', 'important', 'pinned'].includes(value)
+      ? 'amber'
+      : ['rejected', 'cancelled', 'urgent'].includes(value)
+        ? 'rose'
+        : ['draft', 'archived', 'inactive', 'withdrawn'].includes(value)
+          ? 'slate'
+          : 'blue';
   return (
-    <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-950">
+    <span className={`status-badge status-${tone}`}>
       {String(children).replaceAll('_', ' ')}
     </span>
   );
@@ -108,7 +121,7 @@ export function FormErrors({ error }) {
 export function Pagination({ meta, onPage }) {
   if (!meta) return null;
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-4 text-sm">
+    <div className="pagination-bar">
       <span>
         {meta.total} records · Page {meta.page} of{' '}
         {Math.max(1, meta.totalPages)}

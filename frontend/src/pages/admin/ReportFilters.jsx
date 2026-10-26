@@ -37,7 +37,7 @@ function ResourceFilter({ label, path, value, onChange, companyId }) {
           ))}
         </Field>
         {query.data?.meta?.total > rows.length && (
-          <p className="text-xs text-stone-600">
+          <p className="text-xs text-slate-600">
             Showing the first 100 matches. Refine the search to find another
             record.
           </p>
@@ -57,7 +57,7 @@ export default function ReportFilters({ state }) {
       aria-label="Report filters"
     >
       <h2 className="text-lg font-semibold">Filter reports</h2>
-      <p className="text-sm text-stone-600">
+      <p className="text-sm text-slate-600">
         Date filters include drives whose registration deadline falls within
         these UTC calendar days. Filters apply to every report and CSV export.
       </p>

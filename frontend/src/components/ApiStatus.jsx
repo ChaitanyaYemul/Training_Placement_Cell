@@ -4,7 +4,7 @@ export default function ApiStatus() {
   return (
     <section
       aria-label="API connection"
-      className="rounded-2xl border border-stone-200 bg-white p-6"
+      className="rounded-2xl border border-slate-200 bg-white p-6"
     >
       <p className="eyebrow mb-3">Environment status</p>
       <div role="status" aria-live="polite">
@@ -25,10 +25,10 @@ export default function ApiStatus() {
           <p>No health information available.</p>
         ) : (
           <>
-            <p className="font-semibold text-emerald-800">
+            <p className="font-semibold text-sky-800">
               {data.status === 'ok' ? 'API connected' : 'API status unknown'}
             </p>
-            <p className="mt-1 text-sm text-stone-600">
+            <p className="mt-1 text-sm text-slate-600">
               Database readiness is not checked by this endpoint.
             </p>
           </>

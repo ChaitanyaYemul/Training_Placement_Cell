@@ -4,19 +4,31 @@ import { useResource } from '../../hooks/useResource.js';
 import Card from '../../components/Card.jsx';
 import { PageHeader, QueryState, StatusBadge } from '../../components/ui.jsx';
 import { formatDate } from '../../utils/dates.js';
+import Icon from '../../components/Icon.jsx';
+import { m as motion } from 'motion/react';
 const poll = { refetchInterval: 45_000, refetchIntervalInBackground: false };
-function Summary({ title, query, to }) {
+function Summary({ title, query, to, icon, index }) {
   return (
-    <Card title={title}>
+    <motion.section
+      className="summary-card"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+    >
+      <div className="summary-top">
+        <h2>{title}</h2>
+        <span className="icon-tile">
+          <Icon name={icon} size={18} />
+        </span>
+      </div>
       <QueryState query={query}>
-        <p className="mb-4 text-4xl font-semibold text-emerald-950">
-          {query.data?.meta?.total ?? '—'}
-        </p>
-        <Link className="text-link" to={to}>
-          View {title.toLowerCase()} →
+        <p className="summary-number">{query.data?.meta?.total ?? '—'}</p>
+        <Link className="summary-bottom" to={to}>
+          <span>View {title.toLowerCase()}</span>
+          <Icon name="arrow" size={14} />
         </Link>
       </QueryState>
-    </Card>
+    </motion.section>
   );
 }
 export default function Dashboard() {
@@ -48,9 +60,33 @@ export default function Dashboard() {
             : 'Your placement journey, in one place.'
         }
       />
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <section className="dashboard-banner">
+        <div>
+          <p className="eyebrow">
+            {user.role === 'admin'
+              ? 'EVERY OPPORTUNITY COUNTS'
+              : 'YOUR FUTURE IS TAKING SHAPE'}
+          </p>
+          <h2>
+            {user.role === 'admin'
+              ? 'Great futures start with a connected campus.'
+              : 'A little preparation. A world of possibilities.'}
+          </h2>
+          <p>
+            {user.role === 'admin'
+              ? 'Keep your drives, applications, and student opportunities moving forward.'
+              : 'Discover your next opportunity and keep your placement journey on track.'}
+          </p>
+        </div>
+        <Link className="button button-primary" to={`${prefix}/drives`}>
+          Explore drives <Icon name="arrow" size={15} />
+        </Link>
+      </section>
+      <div className="summary-grid">
         <Summary
           title="Companies"
+          icon="companies"
+          index={0}
           query={companies}
           to={`${prefix}/companies`}
         />
@@ -59,10 +95,14 @@ export default function Dashboard() {
             user.role === 'student' ? 'Published drives' : 'Placement drives'
           }
           query={drives}
+          icon="drives"
+          index={1}
           to={`${prefix}/drives`}
         />
         <Summary
           title="Applications"
+          icon="applications"
+          index={2}
           query={applications}
           to={`${prefix}/applications`}
         />
@@ -83,25 +123,27 @@ export default function Dashboard() {
           >
             <ul className="space-y-4">
               {drives.data?.data?.map((drive) => (
-                <li key={drive.id}>
-                  <Link
-                    className="text-link"
-                    to={`${prefix}/drives/${drive.id}`}
-                  >
-                    {drive.title}
-                  </Link>
-                  <p className="text-sm">
-                    {formatDate(drive.registrationDeadline)}
-                  </p>
-                  <StatusBadge>{drive.status}</StatusBadge>
+                <li key={drive.id} className="dashboard-row">
+                  <div>
+                    <Link
+                      className="text-link"
+                      to={`${prefix}/drives/${drive.id}`}
+                    >
+                      {drive.title}
+                    </Link>
+                    <p className="text-sm">
+                      {formatDate(drive.registrationDeadline)}
+                    </p>
+                    <StatusBadge>{drive.status}</StatusBadge>
+                  </div>
+                  <span className="icon-tile">
+                    <Icon name="calendar" size={17} />
+                  </span>
                 </li>
               ))}
             </ul>
-            <Link
-              className="text-link mt-5 inline-block"
-              to={`${prefix}/drives`}
-            >
-              Browse all drives →
+            <Link className="card-footer-link" to={`${prefix}/drives`}>
+              Browse all drives <Icon name="arrow" size={15} />
             </Link>
           </QueryState>
         </Card>
@@ -112,20 +154,19 @@ export default function Dashboard() {
           >
             <ul className="space-y-4">
               {announcements.data?.data?.map((a) => (
-                <li key={a.id}>
-                  <strong className="text-stone-900">{a.title}</strong>
-                  <p className="line-clamp-3 whitespace-pre-wrap text-sm">
-                    {a.body}
-                  </p>
-                  <StatusBadge>{a.priority}</StatusBadge>
+                <li key={a.id} className="dashboard-row">
+                  <div>
+                    <strong className="text-slate-900">{a.title}</strong>
+                    <p className="line-clamp-3 whitespace-pre-wrap text-sm">
+                      {a.body}
+                    </p>
+                    <StatusBadge>{a.priority}</StatusBadge>
+                  </div>
                 </li>
               ))}
             </ul>
-            <Link
-              className="text-link mt-5 inline-block"
-              to={`${prefix}/announcements`}
-            >
-              Read announcements →
+            <Link className="card-footer-link" to={`${prefix}/announcements`}>
+              Read announcements <Icon name="arrow" size={15} />
             </Link>
           </QueryState>
         </Card>

@@ -1,18 +1,16 @@
 import { useState } from 'react';
+import { m as motion } from 'motion/react';
 import { ToastContext } from './toastContext.js';
 export default function ToastProvider({ children }) {
   const [message, setMessage] = useState('');
   return (
     <ToastContext.Provider value={setMessage}>
       {children}
-      <div
+      <motion.div
+        animate={{ opacity: message ? 1 : 0, y: message ? 0 : 8 }}
         role="status"
         aria-live="polite"
-        className={
-          message
-            ? 'fixed bottom-5 right-5 z-50 max-w-[90vw] rounded-xl bg-emerald-950 p-4 text-white shadow-lg'
-            : 'sr-only'
-        }
+        className={message ? 'toast-message' : 'sr-only'}
       >
         {message}
         {message && (
@@ -24,7 +22,7 @@ export default function ToastProvider({ children }) {
             Dismiss
           </button>
         )}
-      </div>
+      </motion.div>
     </ToastContext.Provider>
   );
 }

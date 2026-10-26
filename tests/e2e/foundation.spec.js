@@ -6,11 +6,11 @@ for (const width of [375, 1280]) {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'From campus.',
+      'A brighter future.',
     );
-    await expect(
-      page.getByText('API connected', { exact: true }),
-    ).toBeVisible();
+    const health = await page.request.get('/api/health');
+    expect(health.status()).toBe(200);
+    expect((await health.json()).data.status).toBe('ok');
     await page.evaluate(() => {
       window.__navigationMarker = 'same-document';
     });

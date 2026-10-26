@@ -73,15 +73,12 @@ export default function ApplicationDetailPage() {
             )}
             <ol className="space-y-5">
               {row.history.map((event) => (
-                <li
-                  key={event.id}
-                  className="border-l-2 border-emerald-200 pl-5"
-                >
+                <li key={event.id} className="border-l-2 border-sky-200 pl-5">
                   <p className="font-semibold">
                     {event.fromStatus ? `${event.fromStatus} → ` : ''}
                     {event.toStatus}
                   </p>
-                  <p className="text-sm text-stone-500">
+                  <p className="text-sm text-slate-500">
                     {formatDate(event.changedAt)} ·{' '}
                     {event.actorRole === 'admin'
                       ? 'Placement administrator'

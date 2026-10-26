@@ -1,84 +1,184 @@
 import { Link } from 'react-router-dom';
-import Card from '../components/Card.jsx';
-import ApiStatus from '../components/ApiStatus.jsx';
+import { m as motion } from 'motion/react';
+import Icon from '../components/Icon.jsx';
+const steps = [
+  [
+    'profile',
+    'Make it yours',
+    'Build your student profile and keep your academic journey up to date.',
+  ],
+  [
+    'drives',
+    'Find your opportunity',
+    'Explore companies, check eligibility, and discover your next placement drive.',
+  ],
+  [
+    'applications',
+    'Follow your progress',
+    'Apply with confidence and track every update, from application to selection.',
+  ],
+];
 export default function HomePage() {
   return (
     <>
-      <section className="relative overflow-hidden rounded-3xl bg-emerald-950 p-7 text-white sm:p-12">
-        <div
-          aria-hidden="true"
-          className="absolute -right-20 -top-28 size-96 rounded-full border border-emerald-700/50"
-        />
-        <div className="relative max-w-2xl">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200">
-            Your next chapter starts here
+      <section className="landing-hero">
+        <motion.div
+          className="hero-copy"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <p className="hero-kicker">
+            <span className="status-dot" />
+            VIT PUNE · TRAINING & PLACEMENT
           </p>
-          <h1 className="text-4xl leading-tight font-semibold tracking-tight sm:text-6xl">
-            From campus.
+          <h1>
+            A brighter future.
             <br />
-            <span className="text-emerald-200">Towards opportunity.</span>
+            <span>Built from here.</span>
           </h1>
-          <p className="mt-6 max-w-lg text-base leading-7 text-emerald-100">
-            A shared space for students and the Training & Placement Cell to
-            organize the journey from preparation to placement.
+          <p className="hero-description">
+            Your talent. The right opportunity. One connected campus.
+            <br className="hidden sm:block" /> A simpler way to take your next
+            big step.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="hero-actions">
             <Link
-              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-emerald-950"
+              className="button button-primary button-large"
               to="/student/dashboard"
             >
-              Student workspace <span aria-hidden="true">↗</span>
+              Student workspace <Icon name="arrow" size={18} />
             </Link>
-            <Link
-              className="rounded-xl border border-emerald-700 px-5 py-3 text-sm font-semibold"
-              to="/admin/dashboard"
-            >
-              Admin workspace
+            <Link className="hero-secondary" to="/admin/dashboard">
+              Admin workspace <Icon name="arrow" size={17} />
             </Link>
           </div>
+          <p className="hero-footnote">
+            <Icon name="shield" size={16} />
+            Your college. Your opportunities. Your journey.
+          </p>
+        </motion.div>
+        <motion.div
+          className="hero-visual"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12, duration: 0.5 }}
+        >
+          <div className="hero-orbit orbit-one" />
+          <div className="hero-orbit orbit-two" />
+          <div className="preview-card">
+            <div className="preview-top">
+              <span className="icon-tile">
+                <Icon name="graduation" size={22} />
+              </span>
+              <span>YOUR NEXT CHAPTER</span>
+              <span className="preview-dots">•••</span>
+            </div>
+            <h2>Possibility looks good on you.</h2>
+            <p>Every great career starts with a first step.</p>
+            <div className="preview-journey">
+              {[
+                'Build your profile',
+                'Discover opportunities',
+                'Make your move',
+              ].map((label, i) => (
+                <div key={label}>
+                  <span
+                    className={
+                      i === 0 ? 'journey-node complete' : 'journey-node'
+                    }
+                  >
+                    {i === 0 ? <Icon name="check" size={15} /> : `0${i + 1}`}
+                  </span>
+                  <span>{label}</span>
+                  <span className="journey-line" />
+                </div>
+              ))}
+            </div>
+            <Link className="preview-bottom" to="/register">
+              Start your placement journey <Icon name="arrow" size={18} />
+            </Link>
+          </div>
+          <div className="floating-label floating-label-top">
+            <span className="mini-icon">
+              <Icon name="spark" size={18} />
+            </span>
+            <div>
+              <strong>Made for your potential</strong>
+              <small>Opportunity, all in one place.</small>
+            </div>
+          </div>
+          <div className="floating-label floating-label-bottom">
+            <span className="mini-icon mint">
+              <Icon name="check" size={18} />
+            </span>
+            <div>
+              <strong>One step closer</strong>
+              <small>From campus to career.</small>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+      <section className="landing-strip" aria-label="Portal capabilities">
+        <span>ONE CAMPUS. EVERY OPPORTUNITY.</span>
+        {[
+          'Company discovery',
+          'Placement drives',
+          'Application tracking',
+          'Official updates',
+        ].map((label) => (
+          <p key={label}>
+            <Icon name="check" size={16} />
+            {label}
+          </p>
+        ))}
+      </section>
+      <section className="landing-how">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">A CLEARER WAY FORWARD</p>
+            <h2>
+              A big journey.
+              <br />A few simple steps.
+            </h2>
+          </div>
+          <p>
+            Less searching. More clarity.
+            <br />
+            Everything you need, in your workspace.
+          </p>
+        </div>
+        <div className="feature-grid">
+          {steps.map(([icon, title, text], i) => (
+            <motion.article
+              key={title}
+              className="feature-card"
+              initial={{ opacity: 1, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ delay: i * 0.06 }}
+            >
+              <div className="feature-top">
+                <span className="icon-tile">
+                  <Icon name={icon} size={23} />
+                </span>
+                <span>0{i + 1}</span>
+              </div>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </motion.article>
+          ))}
         </div>
       </section>
-      <div className="my-8 flex flex-wrap items-center gap-3 text-sm text-stone-600">
-        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-          Campus placements
-        </span>
-        <p>
-          Sign in to manage your profile, discover placement drives, and read
-          official updates.
-        </p>
-      </div>
-      <div className="grid gap-5 md:grid-cols-2">
-        <Card eyebrow="01 / For students" title="A clearer path to placement">
-          <p>
-            Profile, opportunities, applications, and announcements come
-            together in your student workspace.
-          </p>
-          <Link
-            className="mt-4 inline-block font-semibold text-emerald-900 underline underline-offset-4"
-            to="/student/dashboard"
-          >
-            Open student workspace
-          </Link>
-        </Card>
-        <Card
-          eyebrow="02 / For the placement cell"
-          title="One place to coordinate"
-        >
-          <p>
-            Company records, placement drives, recruitment schedules, and
-            reports support the cell’s daily work.
-          </p>
-          <Link
-            className="mt-4 inline-block font-semibold text-emerald-900 underline underline-offset-4"
-            to="/admin/dashboard"
-          >
-            Open admin workspace
-          </Link>
-        </Card>
-      </div>
-      <div className="mt-5">
-        <ApiStatus />
-      </div>
+      <section className="landing-cta">
+        <div>
+          <p className="eyebrow">YOUR FUTURE, IN FOCUS</p>
+          <h2>Ready for what comes next?</h2>
+          <p>Start with your profile. See where your potential takes you.</p>
+        </div>
+        <Link className="button button-primary button-large" to="/register">
+          Create your account <Icon name="arrow" size={18} />
+        </Link>
+      </section>
     </>
   );
 }

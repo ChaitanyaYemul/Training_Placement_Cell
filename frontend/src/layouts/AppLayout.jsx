@@ -1,41 +1,27 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { Button, FormErrors } from '../components/ui.jsx';
+import Brand from '../components/Brand.jsx';
 export default function AppLayout() {
   const { user, logout } = useAuth();
+  const { pathname } = useLocation();
+  const workspace = /^\/(student|admin)\//.test(pathname);
   return (
-    <div className="min-h-screen">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-10 focus:bg-white focus:p-4"
-      >
+    <div
+      className={
+        workspace ? 'app-shell workspace-shell' : 'app-shell public-shell'
+      }
+    >
+      <a href="#main-content" className="skip-link">
         Skip to content
       </a>
-      <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
-          <NavLink
-            to="/"
-            className="flex items-center gap-3"
-            aria-label="Placement Cell home"
-          >
-            <span
-              className="grid size-10 place-items-center rounded-xl bg-emerald-950 text-lg font-semibold text-white"
-              aria-hidden="true"
-            >
-              P
-            </span>
-            <span className="font-semibold tracking-tight">
-              Placement Cell
-              <span className="block text-xs font-normal text-stone-500">
-                Training & Placement
-              </span>
-            </span>
+      <header className="site-header">
+        <div className="header-inner">
+          <NavLink to="/" aria-label="Placement Cell home">
+            <Brand />
           </NavLink>
-          <nav
-            aria-label="Main navigation"
-            className="flex flex-wrap items-center gap-2 text-sm font-medium"
-          >
-            <NavLink className="nav-link" to="/" end>
+          <nav aria-label="Main navigation" className="header-nav">
+            <NavLink className="nav-link overview-link" to="/" end>
               Overview
             </NavLink>
             {user ? (
@@ -57,7 +43,7 @@ export default function AppLayout() {
                   Sign in
                 </NavLink>
                 <NavLink className="button button-primary" to="/register">
-                  Register
+                  Register <span aria-hidden="true">↗</span>
                 </NavLink>
               </>
             )}
@@ -67,16 +53,18 @@ export default function AppLayout() {
       <main
         id="main-content"
         tabIndex={-1}
-        className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12"
+        className={workspace ? 'workspace-main' : 'public-main'}
       >
         <FormErrors
           error={logout.error?.status === 401 ? null : logout.error}
         />
         <Outlet />
       </main>
-      <footer className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 px-5 py-8 text-xs text-stone-500 sm:px-8">
-        <p>College Training and Placement Cell</p>
-        <p>Campus to career, together.</p>
+      <footer className="site-footer">
+        <p>
+          VIT Pune <span aria-hidden="true">·</span> Training & Placement Cell
+        </p>
+        <p>Made for your next chapter.</p>
       </footer>
     </div>
   );
